@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyMarket - 홈</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* ✅ 푸터를 하단으로 밀어내기 위한 설정 */
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .main-content {
+            flex: 1; /* 남는 공간을 모두 차지하여 푸터를 바닥으로 밀어냄 */
+        }
+        .product-img { height: 200px; object-fit: cover; }
+        .friend-section { background-color: #f0f8ff; border-radius: 15px; padding: 20px; margin-bottom: 30px; }
+        .card { transition: transform 0.2s; }
+        .card:hover { transform: translateY(-5px); }
+        .btn-xs { padding: 0.25rem 0.4rem; font-size: 0.75rem; }
+    </style>
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="/">🛒 MyMarket</a>
+            <div class="ms-auto">
+                <% if (user) { %>
+                    <span class="text-light me-3 small">안녕하세요, <strong><%= user.userId %></strong>님!</span>
+                    <a href="/products/write" class="btn btn-success btn-sm">물품 등록</a>
+                    <a href="/auth/logout" class="btn btn-outline-light btn-sm">로그아웃</a>
+                <% } else { %>
+                    <a href="/auth/login" class="btn btn-primary btn-sm">로그인</a>
+                    <a href="/auth/register" class="btn btn-outline-light btn-sm">회원가입</a>
+                <% } %>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div class="container">
+            
+            <% if (user && typeof friendProducts !== 'undefined' && friendProducts.length > 0) { %>
+                <div class="friend-section shadow-sm border border-info">
+                    <h4 class="mb-3 text-info">🤝 친구들이 올린 최신 물품</h4>
+                    <div class="row">
+                        <% friendProducts.forEach(product => { %>
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100 border-info">
+                                    <div class="card-header bg-info text-white text-center py-1 small">추천 매물</div>
+                                    <img src="<%= product.imagePath || 'https://via.placeholder.com/200x150?text=No+Image' %>" class="card-img-top product-img" alt="상품이미지">
+                                    <div class="card-body">
+                                        <h5 class="card-title text-truncate fs-6"><%= product.title %></h5>
+                                        <p class="card-text text-primary fw-bold mb-1"><%= product.price.toLocaleString() %>원</p>
+                                        <p class="card-text small text-muted mb-0">판매자: <%= product.ownerName %></p>
+                                    </div>
+                                    <div class="card-footer bg-white border-top-0">
+                                        <a href="/products/detail/<%= product.id %>" class="btn btn-sm btn-info w-100 text-white">상세보기</a>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+                </div>
+            <% } %>
+
+            <div class="all-products pb-5">
+                <h3 class="mb-4"> 현재 판매 중인 물품</h3>
+                <div class="row">
+                    <% if (typeof allProducts !== 'undefined' && allProducts.length > 0) { %>
+                        <% allProducts.forEach(product => { %>
+                            <div class="col-md-3 col-sm-6 mb-4">
+                                <div class="card h-100 shadow-sm">
+                                    <img src="<%= product.imagePath || 'https://via.placeholder.com/200x150?text=No+Image' %>" class="card-img-top product-img" alt="상품이미지">
+                                    <div class="card-body">
+                                        <h5 class="card-title text-truncate fs-6"><%= product.title %></h5>
+                                        <p class="card-text text-danger fw-bold"><%= product.price.toLocaleString() %>원</p>
+                                    </div>
+                                    <div class="card-footer bg-white border-top-0 pb-3">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <a href="/products/detail/<%= product.id %>" class="btn btn-sm btn-outline-secondary">상세보기</a>
+                                            
+                                            <% if (user && user.id === product.userId) { %>
+                                                <div class="btn-group">
+                                                    <a href="/products/edit/<%= product.id %>" class="btn btn-warning btn-xs text-dark">수정</a>
+                                                    <a href="/products/delete/<%= product.id %>" class="btn btn-danger btn-xs" onclick="return confirm('정말 삭제하시겠습니까?')">삭제</a>
+                                                </div>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }); %>
+                    <% } else { %>
+                        <div class="col-12 text-center py-5">
+                            <div class="card py-5 bg-white shadow-sm">
+                                <p class="text-muted mb-0">등록된 판매 물품이 없습니다.</p>
+                                <p class="text-muted small">첫 번째 물건의 주인이 되어보세요!</p>
+                            </div>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white text-center py-3 mt-auto shadow-lg">
+        <div class="container">
+            <small>&copy; 2026 MyMarket Project. All Rights Reserved.</small>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
