@@ -1,33 +1,158 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
-    <title>물품 수정</title>
+    <meta charset="UTF-8">
+    <title>물품 수정 - MyMarket</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .edit-card {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .guide-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 14px;
+        }
+
+        .current-img {
+            max-height: 250px;
+            object-fit: contain;
+            background-color: #f1f3f5;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 5px;
+        }
+
+        .no-image-box {
+            height: 160px;
+            background-color: #f1f3f5;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #868e96;
+            font-weight: 500;
+        }
+    </style>
 </head>
-<body class="container mt-5">
-    <div class="card shadow p-4">
-        <h2>물품 정보 수정</h2>
-        <form action="/products/edit/<%= product.id %>" method="POST" enctype="multipart/form-data">
-            <div class="mb-3">
-                <label class="form-label">상품명</label>
-                <input type="text" name="title" class="form-control" value="<%= product.title %>" required>
+
+<body>
+    <nav class="navbar navbar-dark bg-dark mb-5">
+        <div class="container">
+            <a href="/" class="navbar-brand fw-bold">🛒 MyMarket</a>
+            <div>
+                <a href="/" class="btn btn-outline-light btn-sm">홈으로</a>
             </div>
-            <div class="mb-3">
-                <label class="form-label">가격</label>
-                <input type="number" name="price" class="form-control" value="<%= product.price %>" required>
+        </div>
+    </nav>
+
+    <div class="container mb-5">
+        <div class="card shadow edit-card">
+            <div class="card-header bg-warning">
+                <h3 class="mb-0">물품 정보 수정</h3>
             </div>
-            <div class="mb-3">
-                <label class="form-label">설명</label>
-                <textarea name="content" class="form-control" rows="5"><%= product.content %></textarea>
+
+            <div class="card-body p-4">
+
+                <div class="guide-box mb-4">
+                    <strong>수정 안내</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>이미지 파일을 새로 첨부하면 기존 상품 이미지가 변경됩니다.</li>
+                        <li><code>.txt</code> 파일을 첨부하면 파일 내용이 상품 설명에 추가됩니다.</li>
+                        <li>파일을 첨부하지 않으면 기존 이미지가 유지됩니다.</li>
+                    </ul>
+                </div>
+
+                <form action="/products/edit/<%= product.id %>" method="POST" enctype="multipart/form-data">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">상품명</label>
+                        <input type="text"
+                               name="title"
+                               class="form-control"
+                               value="<%= product.title %>"
+                               required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">가격</label>
+                        <div class="input-group">
+                            <input type="number"
+       name="price"
+       class="form-control"
+       value="<%= product.price %>"
+       min="0"
+       max="999999999"
+       step="1"
+       required>
+                            <span class="input-group-text">원</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">상세 설명</label>
+                        <textarea name="content"
+                                  class="form-control"
+                                  rows="7"><%= product.content || '' %></textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">현재 이미지</label>
+
+                        <% if (product.imagePath) { %>
+                            <div class="mb-2">
+                                <img src="<%= product.imagePath %>"
+                                     class="current-img img-fluid"
+                                     alt="현재 상품 이미지">
+                            </div>
+                            <div class="form-text mb-2">
+                                현재 이미지 경로: <%= product.imagePath %>
+                            </div>
+                        <% } else { %>
+                            <div class="no-image-box mb-2">
+                                현재 등록된 이미지가 없습니다.
+                            </div>
+                        <% } %>
+
+                        <label class="form-label fw-bold mt-3">이미지 또는 문서(.txt) 새로 첨부</label>
+                        <input type="file"
+                               name="document"
+                               class="form-control"
+                               accept="image/*,.txt,text/plain">
+
+                        <div class="form-text">
+                            이미지 파일은 상품 이미지로 변경되고, txt 파일은 상품 설명에 추가됩니다.
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="/products/detail/<%= product.id %>" class="btn btn-secondary">
+                            취소
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            수정 완료
+                        </button>
+                    </div>
+
+                </form>
             </div>
-            <div class="mb-3">
-                <p>현재 이미지: <%= product.imagePath %></p>
-                <label class="form-label">이미지 변경 (선택)</label>
-                <input type="file" name="document" class="form-control">
-            </div>
-            <button type="submit" class="btn btn-success">수정 완료</button>
-            <a href="/" class="btn btn-secondary">취소</a>
-        </form>
+        </div>
     </div>
+
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <small>&copy; 2026 MyMarket Project</small>
+    </footer>
 </body>
 </html>
