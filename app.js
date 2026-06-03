@@ -11,7 +11,7 @@ const indexRouter = require('./routes/index');
 const app = express();
 
 // 포트 및 서버 주소 설정
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 // 보고서와 시작 페이지에 넣을 실제 서버 주소
 // 예: http://123.123.123.123:3000
