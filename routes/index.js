@@ -2,11 +2,11 @@ const express = require('express');
 const router = express.Router();
 const db = require('../models/db');
 
-// 메인 페이지
+// 1. 메인 페이지 (알림 목록 포함)
 router.get('/', async (req, res) => {
     try {
         const user = req.session.user || null;
-        let notifications = []; // 알림 배열 추가
+        let notifications = []; // 알림 배열
 
         // 전체 판매 물품 조회
         const [allProducts] = await db.query(`
@@ -20,7 +20,7 @@ router.get('/', async (req, res) => {
 
         let friendProducts = [];
 
-        // 로그인한 경우에만 친구의 최근 판매물품 3개 및 알림 조회
+        // 로그인한 경우에만 친구의 최근 판매물품 및 안 읽은 알림 조회
         if (user) {
             const [rows] = await db.query(`
                 SELECT 
@@ -58,14 +58,14 @@ router.get('/', async (req, res) => {
         console.error('메인 페이지 오류:', err);
         res.status(500).send(`
             <script>
-                alert('메인 페이지를 불러오는 중 오류가 발생했습니다. DB 연결과 테이블을 확인하세요.');
+                alert('메인 페이지를 불러오는 중 오류가 발생했습니다.');
                 history.back();
             </script>
         `);
     }
 });
 
-// 알림 읽음(닫기) 처리
+// 2. 알림 읽음(닫기) 처리
 router.post('/notifications/clear', async (req, res) => {
     if (req.session.user) {
         await db.query('UPDATE notifications SET isRead = TRUE WHERE userId = ?', [req.session.user.id]);
@@ -73,15 +73,32 @@ router.post('/notifications/clear', async (req, res) => {
     res.redirect('back');
 });
 
-// 친구 추가
+// 3. 내 알림 보관함 보기
+router.get('/notifications', async (req, res) => {
+    if (!req.session.user) return res.send("<script>alert('로그인이 필요합니다.');location.href='/auth/login';</script>");
+    try {
+        const myId = req.session.user.id;
+        
+        // 내 모든 알림 가져오기 (최신순)
+        const [notifications] = await db.query(
+            'SELECT * FROM notifications WHERE userId = ? ORDER BY id DESC',
+            [myId]
+        );
+        
+        // 알림함에 들어오면 '안 읽음' 알림들을 모두 '읽음'으로 자동 처리
+        await db.query('UPDATE notifications SET isRead = TRUE WHERE userId = ?', [myId]);
+
+        res.render('notifications', { notifications });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("알림 로드 오류");
+    }
+});
+
+// 4. 친구 추가
 router.get('/add-friend/:friendId', async (req, res) => {
     if (!req.session.user) {
-        return res.send(`
-            <script>
-                alert('로그인이 필요합니다.');
-                location.href = '/auth/login';
-            </script>
-        `);
+        return res.send("<script>alert('로그인이 필요합니다.');location.href='/auth/login';</script>");
     }
 
     try {
@@ -107,19 +124,36 @@ router.get('/add-friend/:friendId', async (req, res) => {
     }
 });
 
-// 채팅방 보기
-router.get('/chat/:sellerId', async (req, res) => {
-    if (!req.session.user) {
-        return res.send("<script>alert('로그인이 필요합니다.');location.href='/auth/login';</script>");
+// 5. 내 채팅 목록 보기
+router.get('/chat', async (req, res) => {
+    if (!req.session.user) return res.send("<script>alert('로그인이 필요합니다.');location.href='/auth/login';</script>");
+    try {
+        const myId = req.session.user.id;
+        
+        // 나와 한 번이라도 메시지를 주고받은 적 있는 사용자 목록 가져오기
+        const [chatUsers] = await db.query(`
+            SELECT DISTINCT u.id, u.userId
+            FROM users u
+            JOIN messages m ON (u.id = m.senderId OR u.id = m.receiverId)
+            WHERE (m.senderId = ? OR m.receiverId = ?) AND u.id != ?
+        `, [myId, myId, myId]);
+
+        res.render('chatList', { chatUsers });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("채팅 목록 로드 오류");
     }
+});
+
+// 6. 특정 판매자와의 채팅방 보기
+router.get('/chat/:sellerId', async (req, res) => {
+    if (!req.session.user) return res.send("<script>alert('로그인이 필요합니다.');location.href='/auth/login';</script>");
 
     try {
         const myId = req.session.user.id;
         const sellerId = Number(req.params.sellerId);
 
-        if (myId === sellerId) {
-            return res.send("<script>alert('자신과는 채팅할 수 없습니다.');history.back();</script>");
-        }
+        if (myId === sellerId) return res.send("<script>alert('자신과는 채팅할 수 없습니다.');history.back();</script>");
 
         const [sellers] = await db.query('SELECT id, userId FROM users WHERE id = ?', [sellerId]);
         if (sellers.length === 0) return res.send("<script>alert('존재하지 않는 사용자입니다.');history.back();</script>");
@@ -139,7 +173,7 @@ router.get('/chat/:sellerId', async (req, res) => {
     }
 });
 
-// 채팅 메시지 전송
+// 7. 채팅 메시지 전송
 router.post('/chat/:sellerId', async (req, res) => {
     if (!req.session.user) return res.redirect('/auth/login');
     
