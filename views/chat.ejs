@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title><%= seller.userId %>님과의 채팅</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container mt-5" style="max-width: 600px;">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">💬 <%= seller.userId %>님과의 대화</h5>
+                <a href="javascript:history.back()" class="btn btn-sm btn-light">돌아가기</a>
+            </div>
+            
+            <div class="card-body" style="height: 450px; overflow-y: auto; background-color: #f8f9fa;">
+                <% if (messages.length === 0) { %>
+                    <div class="text-center text-muted mt-5">첫 인사를 건네보세요!</div>
+                <% } %>
+
+                <% messages.forEach(msg => { %>
+                    <div class="mb-3 <%= msg.senderId === myId ? 'text-end' : 'text-start' %>">
+                        <div class="small text-muted mb-1">
+                            <%= msg.senderId === myId ? '나' : msg.senderName %>
+                        </div>
+                        <span class="badge <%= msg.senderId === myId ? 'bg-primary' : 'bg-secondary' %> text-wrap text-start" style="font-size: 15px; max-width: 80%;">
+                            <%= msg.content %>
+                        </span>
+                    </div>
+                <% }) %>
+            </div>
+
+            <div class="card-footer bg-white">
+                <form action="/chat/<%= seller.id %>" method="POST" class="d-flex">
+                    <input type="text" name="content" class="form-control me-2" placeholder="메시지를 입력하세요" required autocomplete="off">
+                    <button type="submit" class="btn btn-primary px-4">전송</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
