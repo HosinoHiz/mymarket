@@ -78,15 +78,11 @@ router.get('/delete/:id', requireLogin, async (req, res) => {
     } catch (err) { res.status(500).send("삭제 오류"); }
 });
 
-// ⭐ 장바구니 담기
 router.get('/cart/:id', requireLogin, async (req, res) => {
     try {
-        const productId = req.params.id;
-        const userId = req.session.user.id;
-        
+        const productId = req.params.id; const userId = req.session.user.id;
         const [productCheck] = await db.query('SELECT userId FROM products WHERE id = ?', [productId]);
         if (productCheck.length > 0 && productCheck[0].userId === userId) return res.send("<script>alert('내 상품은 담을 수 없습니다.');history.back();</script>");
-
         const [existing] = await db.query('SELECT * FROM cart WHERE userId = ? AND productId = ?', [userId, productId]);
         if(existing.length > 0) return res.send("<script>alert('이미 장바구니에 담긴 상품입니다.');history.back();</script>");
         
@@ -97,21 +93,22 @@ router.get('/cart/:id', requireLogin, async (req, res) => {
 
 router.get('/buy/:id', requireLogin, async (req, res) => {
     try {
-        const productId = Number(req.params.id);
-        const buyerId = req.session.user.id;
+        const productId = Number(req.params.id); const buyerId = req.session.user.id;
         const [products] = await db.query('SELECT * FROM products WHERE id = ?', [productId]);
         if (products.length === 0) return res.send("<script>alert('상품이 없습니다.');location.href='/';</script>");
         const product = products[0];
 
         if (product.userId === buyerId) return res.send("<script>alert('내 상품은 구매할 수 없습니다.');history.back();</script>");
+        
+        // ⭐ 예약중 또는 판매완료 시 결제 차단
         if (product.status === 'soldout') return res.send("<script>alert('이미 판매된 상품입니다.');history.back();</script>");
+        if (product.status === 'reserved') return res.send("<script>alert('현재 예약 진행 중인 상품이라 구매할 수 없습니다.');history.back();</script>");
 
         const [buyerRows] = await db.query('SELECT balance FROM users WHERE id = ?', [buyerId]);
         if (buyerRows[0].balance < product.price) return res.send("<script>alert('잔액이 부족합니다.');history.back();</script>");
 
-        // ⭐ 결제 성공 시 상태를 변경하고 buyerId 기록
-        const [result] = await db.query("UPDATE products SET status='soldout', buyerId=? WHERE id=? AND status<>'soldout'", [buyerId, productId]);
-        if (result.affectedRows === 0) return res.send("<script>alert('이미 판매되었습니다.');history.back();</script>");
+        const [result] = await db.query("UPDATE products SET status='soldout', buyerId=? WHERE id=? AND status='onsale'", [buyerId, productId]);
+        if (result.affectedRows === 0) return res.send("<script>alert('구매할 수 없는 상태입니다.');history.back();</script>");
 
         await db.query('UPDATE users SET balance = balance - ? WHERE id = ?', [product.price, buyerId]);
         await db.query('UPDATE users SET balance = balance + ? WHERE id = ?', [product.price, product.userId]);
@@ -128,7 +125,11 @@ router.post('/bargain/:id', requireLogin, async (req, res) => {
         if (products.length === 0) return res.send("<script>alert('상품을 찾을 수 없습니다.');history.back();</script>");
         const product = products[0];
         if (product.userId === buyerId) return res.send("<script>alert('내 상품에는 흥정불가.');history.back();</script>");
+        
+        // ⭐ 예약중 또는 판매완료 시 흥정 차단
         if (product.status === 'soldout') return res.send("<script>alert('이미 판매된 상품입니다.');history.back();</script>");
+        if (product.status === 'reserved') return res.send("<script>alert('현재 예약 진행 중이라 흥정할 수 없습니다.');history.back();</script>");
+
         if (offerPrice >= product.price) return res.send("<script>alert('원가보다 낮은 가격을 제시해주세요!');history.back();</script>");
         
         const [buyerRows] = await db.query('SELECT balance FROM users WHERE id = ?', [buyerId]);
@@ -157,7 +158,6 @@ router.get('/bargain/accept/:id', requireLogin, async (req, res) => {
         const [buyerRows] = await db.query('SELECT balance FROM users WHERE id = ?', [bargain.buyerId]);
         if (buyerRows[0].balance < bargain.offerPrice) return res.send("<script>alert('구매자 잔액이 부족합니다.');history.back();</script>");
 
-        // ⭐ 흥정 수락 시에도 구매자 정보(buyerId) 기록
         const [updateResult] = await db.query("UPDATE products SET status='soldout', buyerId=? WHERE id=? AND status<>'soldout'", [bargain.buyerId, bargain.productId]);
         if (updateResult.affectedRows === 0) return res.send("<script>alert('오류 발생.');history.back();</script>");
 
@@ -180,6 +180,18 @@ router.get('/bargain/reject/:id', requireLogin, async (req, res) => {
         }
         res.redirect('/auth/profile');
     } catch(err) { res.status(500).send("거절 오류"); }
+});
+
+// ⭐ 판매자가 직접 판매 상태(판매중, 예약중, 판매완료)를 변경하는 라우터
+router.post('/status/:id', requireLogin, async (req, res) => {
+    try {
+        const { status } = req.body;
+        // 권한 확인 및 상태 변경
+        const [result] = await db.query('UPDATE products SET status = ? WHERE id = ? AND userId = ?', [status, req.params.id, req.session.user.id]);
+        if (result.affectedRows === 0) return res.send("<script>alert('권한이 없습니다.');history.back();</script>");
+        
+        res.redirect('/products/detail/' + req.params.id);
+    } catch (err) { res.status(500).send("상태 변경 오류"); }
 });
 
 module.exports = router;

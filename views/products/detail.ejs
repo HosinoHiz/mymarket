@@ -21,7 +21,12 @@
             <img src="<%= product.imagePath || 'https://via.placeholder.com/600x400?text=No+Image' %>" class="detail-img card-img-top">
             <div class="card-body p-4">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h2 class="fw-bold mb-0"><%= product.title %> <% if (product.status === 'soldout') { %><span class="badge bg-secondary fs-6 align-middle">판매완료</span><% } %></h2>
+                    <h2 class="fw-bold mb-0">
+                        <%= product.title %> 
+                        <% if (product.status === 'soldout') { %><span class="badge bg-secondary fs-6 align-middle">판매완료</span>
+                        <% } else if (product.status === 'reserved') { %><span class="badge bg-warning text-dark fs-6 align-middle">예약중</span>
+                        <% } else { %><span class="badge bg-success fs-6 align-middle">판매중</span><% } %>
+                    </h2>
                     <h3 class="text-danger mb-0"><%= Number(product.price).toLocaleString() %>원</h3>
                 </div>
                 <p class="text-muted small">👁 조회수: <%= product.views %> | 📍 지역: <%= product.location || '정보없음' %></p>
@@ -32,14 +37,24 @@
                     <span class="text-secondary">판매자: <strong><%= product.ownerName %></strong></span>
                     <% if (user && user.id !== product.userId) { %><a href="/chat/<%= product.userId %>" class="btn btn-sm btn-success">💬 1:1 채팅</a><% } %>
                 </div>
-                <div class="d-flex justify-content-end gap-2">
+                <div class="d-flex justify-content-end gap-2 align-items-center">
                     <% if (user) { %>
                         <% if (user.id === product.userId) { %>
+                            <form action="/products/status/<%= product.id %>" method="POST" class="m-0 me-auto">
+                                <select name="status" class="form-select border-primary fw-bold text-primary" style="width: 140px;" onchange="this.form.submit()">
+                                    <option value="onsale" <%= product.status === 'onsale' ? 'selected' : '' %>>🟢 판매중</option>
+                                    <option value="reserved" <%= product.status === 'reserved' ? 'selected' : '' %>>🟡 예약중</option>
+                                    <option value="soldout" <%= product.status === 'soldout' ? 'selected' : '' %>>⚫ 판매완료</option>
+                                </select>
+                            </form>
+
                             <a href="/products/edit/<%= product.id %>" class="btn btn-warning">수정</a>
                             <a href="/products/delete/<%= product.id %>" class="btn btn-danger" onclick="return confirm('삭제할까요?')">삭제</a>
                         <% } else { %>
                             <% if (product.status === 'soldout') { %>
                                 <button class="btn btn-secondary" disabled>판매완료 됨</button>
+                            <% } else if (product.status === 'reserved') { %>
+                                <button class="btn btn-warning" disabled>현재 예약 진행 중</button>
                             <% } else { %>
                                 <a href="/products/cart/<%= product.id %>" class="btn btn-outline-secondary">🛒 장바구니 담기</a>
                                 <button class="btn btn-warning" onclick="requestBargain('<%= product.id %>', <%= product.price %>)">🤝 흥정하기</button>

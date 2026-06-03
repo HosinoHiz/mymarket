@@ -44,7 +44,9 @@
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between">
                                         <h6 class="fw-bold text-truncate"><%= product.title %></h6>
-                                        <% if (product.status === 'soldout') { %><span class="badge bg-secondary">완료</span><% } else { %><span class="badge bg-success">판매중</span><% } %>
+                                        <% if (product.status === 'soldout') { %><span class="badge bg-secondary">완료</span>
+                                        <% } else if (product.status === 'reserved') { %><span class="badge bg-warning text-dark">예약중</span>
+                                        <% } else { %><span class="badge bg-success">판매중</span><% } %>
                                     </div>
                                     <p class="text-danger fw-bold mb-1"><%= Number(product.price || 0).toLocaleString() %>원</p>
                                     <p class="small text-muted mb-0">👁 조회: <%= product.views %> | 판매자: <%= product.ownerName %></p>
