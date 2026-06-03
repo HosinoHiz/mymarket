@@ -7,8 +7,18 @@
     <style>body{background-color:#f8f9fa;}.detail-img{max-height:500px;width:100%;object-fit:contain;background-color:#fff;border-bottom:1px solid #dee2e6;}</style>
 </head>
 <body>
-    <div class="container mt-5 mb-5">
-        <div class="card shadow p-0 col-md-8 mx-auto">
+    <nav class="navbar navbar-dark bg-dark mb-4 shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">🛒 MyMarket</a>
+            <div>
+                <a href="javascript:history.back()" class="btn btn-outline-light btn-sm me-2">🔙 뒤로가기</a>
+                <a href="/" class="btn btn-primary btn-sm">🏠 홈으로</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mb-5">
+        <div class="card shadow border-0 col-md-8 mx-auto">
             <img src="<%= product.imagePath || 'https://via.placeholder.com/600x400?text=No+Image' %>" class="detail-img card-img-top">
             <div class="card-body p-4">
                 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -28,7 +38,6 @@
                 </div>
 
                 <div class="d-flex justify-content-end gap-2">
-                    <a href="/" class="btn btn-outline-secondary">목록으로</a>
                     <% if (user) { %>
                         <% if (user.id === product.userId) { %>
                             <a href="/products/edit/<%= product.id %>" class="btn btn-warning">수정</a>
@@ -53,8 +62,6 @@
                 location.href = '/products/buy/' + id;
             }
         }
-
-        // ⭐ 흥정 스크립트 추가
         function requestBargain(id, originalPrice) {
             const price = prompt(`현재 가격: ${originalPrice.toLocaleString()}원\n원하시는 흥정 가격을 입력하세요 (숫자만):`);
             if (price) {
@@ -63,15 +70,10 @@
                 if (numPrice >= originalPrice) return alert('원래 가격보다 낮은 가격을 입력하셔야 흥정입니다!');
                 
                 const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '/products/bargain/' + id;
+                form.method = 'POST'; form.action = '/products/bargain/' + id;
                 const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'offerPrice';
-                input.value = numPrice;
-                form.appendChild(input);
-                document.body.appendChild(form);
-                form.submit();
+                input.type = 'hidden'; input.name = 'offerPrice'; input.value = numPrice;
+                form.appendChild(input); document.body.appendChild(form); form.submit();
             }
         }
     </script>

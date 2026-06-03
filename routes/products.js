@@ -27,22 +27,29 @@ function readTextFile(file) { try { return fs.readFileSync(file.path, 'utf8'); }
 
 router.get('/write', requireLogin, (req, res) => { res.render('products/write'); });
 
+// ⭐ 수정된 상품 작성 처리 로직 (routes/products.js 내부)
 router.post('/write', requireLogin, upload.single('document'), async (req, res) => {
     try {
         let { title, content, price } = req.body;
         title = title || ''; content = content || ''; price = parsePrice(price);
+        
         if (!isValidPrice(price)) return res.send("<script>alert('가격은 0원 이상 999,999,999원 이하로 입력하세요.');history.back();</script>");
 
-        let imagePath = null;
-        if (req.file) {
-            if (isTextFile(req.file)) content += `\n\n[첨부 문서]\n${readTextFile(req.file)}`;
-            else if (isImageFile(req.file)) imagePath = `/images/${req.file.filename}`;
+        // ⭐ 1. 이미지 필수 검사 로직 추가
+        if (!req.file || !isImageFile(req.file)) {
+            return res.send("<script>alert('상품 이미지는 필수입니다! 반드시 사진을 업로드해주세요.');history.back();</script>");
         }
+
+        let imagePath = `/images/${req.file.filename}`;
+
         if (!title.trim()) return res.send("<script>alert('상품 제목을 입력하세요.');history.back();</script>");
 
         await db.query('INSERT INTO products (title, content, price, imagePath, userId) VALUES (?, ?, ?, ?, ?)', [title, content, price, imagePath, req.session.user.id]);
+        
         res.send("<script>alert('상품이 등록되었습니다.');location.href='/';</script>");
-    } catch (err) { res.status(500).send("상품 등록 오류"); }
+    } catch (err) { 
+        res.status(500).send("상품 등록 오류"); 
+    }
 });
 
 router.get('/detail/:id', async (req, res) => {
