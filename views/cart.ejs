@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>내 장바구니 - MyMarket</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>.cart-img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; }</style>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-dark bg-dark mb-5">
+        <div class="container"><a href="/" class="navbar-brand fw-bold">🛒 MyMarket</a><a href="/" class="btn btn-outline-light btn-sm">홈으로</a></div>
+    </nav>
+    <div class="container mb-5" style="max-width: 800px;">
+        <div class="card shadow border-0">
+            <div class="card-header bg-secondary text-white"><h4 class="mb-0 fw-bold">🛒 내 장바구니</h4></div>
+            <div class="card-body p-0">
+                <% if (cartItems.length === 0) { %>
+                    <div class="text-center py-5 text-muted">장바구니가 텅 비었습니다. 마음에 드는 상품을 담아보세요!</div>
+                <% } else { %>
+                    <ul class="list-group list-group-flush">
+                        <% cartItems.forEach(item => { %>
+                            <li class="list-group-item p-4 d-flex align-items-center">
+                                <img src="<%= item.imagePath || 'https://via.placeholder.com/80' %>" class="cart-img me-3">
+                                <div class="flex-grow-1">
+                                    <h5 class="fw-bold mb-1"><a href="/products/detail/<%= item.id %>" class="text-dark text-decoration-none"><%= item.title %></a></h5>
+                                    <p class="text-muted small mb-0">판매자: <%= item.ownerName %></p>
+                                    <h5 class="text-danger fw-bold mt-1"><%= Number(item.price).toLocaleString() %>원</h5>
+                                </div>
+                                <div class="d-flex flex-column gap-2">
+                                    <% if (item.status === 'soldout') { %>
+                                        <button class="btn btn-secondary btn-sm" disabled>판매완료됨</button>
+                                    <% } else { %>
+                                        <a href="/products/detail/<%= item.id %>" class="btn btn-primary btn-sm">상세/구매하기</a>
+                                    <% } %>
+                                    <a href="/cart/remove/<%= item.cartId %>" class="btn btn-outline-danger btn-sm" onclick="return confirm('장바구니에서 삭제하시겠습니까?')">삭제</a>
+                                </div>
+                            </li>
+                        <% }) %>
+                    </ul>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -7,7 +7,6 @@
     <style>body { display: flex; flex-direction: column; min-height: 100vh; margin: 0; } .main-content { flex: 1; } .product-img { height: 200px; object-fit: cover; background-color: #f8f9fa; } .card:hover { transform: translateY(-5px); }</style>
 </head>
 <body class="bg-light">
-
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow-sm">
         <div class="container">
             <a class="navbar-brand fw-bold" href="/">🛒 MyMarket</a>
@@ -17,11 +16,10 @@
                         <strong><%= user.userId %></strong>님!
                         <span class="badge bg-warning text-dark ms-2" style="font-size:14px;">💰 <%= typeof userBalance !== 'undefined' ? Number(userBalance).toLocaleString() : 0 %>원</span>
                     </span>
+                    <a href="/cart" class="btn btn-secondary btn-sm me-2">🛒 장바구니</a>
+                    
                     <a href="/notifications" class="btn btn-danger btn-sm position-relative me-2">
-                        🔔 
-                        <% if (typeof notifications !== 'undefined' && notifications.length > 0) { %>
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark"><%= notifications.length %></span>
-                        <% } %>
+                        🔔 <% if (typeof notifications !== 'undefined' && notifications.length > 0) { %><span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark"><%= notifications.length %></span><% } %>
                     </a>
                     <a href="/chat" class="btn btn-success btn-sm me-3">💬</a>
                     <a href="/auth/profile" class="btn btn-info btn-sm me-1">내 정보</a>
@@ -34,23 +32,15 @@
             </div>
         </div>
     </nav>
-
     <div class="main-content">
         <div class="container">
-            <% if (typeof notifications !== 'undefined' && notifications.length > 0) { %>
-                <div class="alert alert-warning alert-dismissible fade show shadow-sm mb-4">
-                    <h6 class="fw-bold">🔔 알림 내역이 있습니다. 메뉴의 종 모양을 눌러 확인하세요.</h6>
-                    <form action="/notifications/clear" method="POST" class="d-inline"><button type="submit" class="btn-close"></button></form>
-                </div>
-            <% } %>
-
             <h3 class="mb-4 fw-bold">📦 전체 판매 물품</h3>
             <div class="row">
                 <% if (typeof allProducts !== 'undefined' && allProducts.length > 0) { %>
                     <% allProducts.forEach(product => { %>
                         <div class="col-md-3 mb-4">
                             <div class="card h-100 shadow-sm border-0">
-                                <img src="<%= product.imagePath || 'https://via.placeholder.com/300x200?text=No+Image' %>" class="card-img-top product-img" alt="상품이미지">
+                                <img src="<%= product.imagePath || 'https://via.placeholder.com/300x200?text=No+Image' %>" class="card-img-top product-img">
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between">
                                         <h6 class="fw-bold text-truncate"><%= product.title %></h6>

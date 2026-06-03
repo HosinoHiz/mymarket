@@ -16,7 +16,6 @@
             </div>
         </div>
     </nav>
-
     <div class="container mb-5">
         <div class="card shadow border-0 col-md-8 mx-auto">
             <img src="<%= product.imagePath || 'https://via.placeholder.com/600x400?text=No+Image' %>" class="detail-img card-img-top">
@@ -29,14 +28,10 @@
                 <hr>
                 <p style="white-space: pre-line; min-height: 100px;"><%= product.content %></p>
                 <hr>
-                
                 <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded mb-4">
                     <span class="text-secondary">판매자: <strong><%= product.ownerName %></strong></span>
-                    <% if (user && user.id !== product.userId) { %>
-                        <a href="/chat/<%= product.userId %>" class="btn btn-sm btn-success">💬 1:1 채팅</a>
-                    <% } %>
+                    <% if (user && user.id !== product.userId) { %><a href="/chat/<%= product.userId %>" class="btn btn-sm btn-success">💬 1:1 채팅</a><% } %>
                 </div>
-
                 <div class="d-flex justify-content-end gap-2">
                     <% if (user) { %>
                         <% if (user.id === product.userId) { %>
@@ -46,8 +41,9 @@
                             <% if (product.status === 'soldout') { %>
                                 <button class="btn btn-secondary" disabled>판매완료 됨</button>
                             <% } else { %>
-                                <button class="btn btn-warning" onclick="requestBargain('<%= product.id %>', <%= product.price %>)">🤝 더 싸게 흥정하기</button>
-                                <button class="btn btn-primary" onclick="buyProduct('<%= product.id %>', <%= product.price %>)">💳 정가로 바로구매</button>
+                                <a href="/products/cart/<%= product.id %>" class="btn btn-outline-secondary">🛒 장바구니 담기</a>
+                                <button class="btn btn-warning" onclick="requestBargain('<%= product.id %>', <%= product.price %>)">🤝 흥정하기</button>
+                                <button class="btn btn-primary" onclick="buyProduct('<%= product.id %>', <%= product.price %>)">💳 바로구매</button>
                             <% } %>
                         <% } %>
                     <% } %>
@@ -55,24 +51,16 @@
             </div>
         </div>
     </div>
-
     <script>
-        function buyProduct(id, price) {
-            if (confirm(`정가 ${price.toLocaleString()}원에 바로 결제하여 구매하시겠습니까?\n(보유 금액에서 즉시 차감됩니다)`)) {
-                location.href = '/products/buy/' + id;
-            }
-        }
+        function buyProduct(id, price) { if (confirm(`정가 ${price.toLocaleString()}원에 바로 결제하시겠습니까?`)) location.href = '/products/buy/' + id; }
         function requestBargain(id, originalPrice) {
-            const price = prompt(`현재 가격: ${originalPrice.toLocaleString()}원\n원하시는 흥정 가격을 입력하세요 (숫자만):`);
+            const price = prompt(`원하시는 흥정 가격을 입력하세요 (숫자만):`);
             if (price) {
                 const numPrice = Number(price);
                 if (isNaN(numPrice) || numPrice < 0) return alert('올바른 숫자를 입력해주세요.');
                 if (numPrice >= originalPrice) return alert('원래 가격보다 낮은 가격을 입력하셔야 흥정입니다!');
-                
-                const form = document.createElement('form');
-                form.method = 'POST'; form.action = '/products/bargain/' + id;
-                const input = document.createElement('input');
-                input.type = 'hidden'; input.name = 'offerPrice'; input.value = numPrice;
+                const form = document.createElement('form'); form.method = 'POST'; form.action = '/products/bargain/' + id;
+                const input = document.createElement('input'); input.type = 'hidden'; input.name = 'offerPrice'; input.value = numPrice;
                 form.appendChild(input); document.body.appendChild(form); form.submit();
             }
         }
