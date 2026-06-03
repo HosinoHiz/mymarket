@@ -7,14 +7,11 @@ router.get('/', async (req, res) => {
         const user = req.session.user || null;
         let notifications = [];
         let friendProducts = [];
-        let userBalance = 0; // ⭐ 추가된 내 잔액 변수
+        let userBalance = 0;
 
-        const [allProducts] = await db.query(`
-            SELECT p.*, u.userId AS ownerName FROM products p JOIN users u ON p.userId = u.id ORDER BY p.id DESC
-        `);
+        const [allProducts] = await db.query(`SELECT p.*, u.userId AS ownerName FROM products p JOIN users u ON p.userId = u.id ORDER BY p.id DESC`);
 
         if (user) {
-            // ⭐ 내 잔액 불러오기
             const [u] = await db.query('SELECT balance FROM users WHERE id = ?', [user.id]);
             if(u.length > 0) userBalance = u[0].balance;
 
@@ -78,8 +75,29 @@ router.get('/chat/:sellerId', async (req, res) => {
 
 router.post('/chat/:sellerId', async (req, res) => {
     if (!req.session.user) return res.redirect('/auth/login');
-    if (req.body.content) await db.query('INSERT INTO messages (senderId, receiverId, content) VALUES (?, ?, ?)', [req.session.user.id, req.params.sellerId, req.body.content]);
-    res.redirect('/chat/' + req.params.sellerId);
+    try {
+        const content = req.body.content;
+        const receiverId = req.params.sellerId;
+        const senderId = req.session.user.id;
+        const senderName = req.session.user.userId;
+
+        if (content && content.trim()) {
+            await db.query('INSERT INTO messages (senderId, receiverId, content) VALUES (?, ?, ?)', [senderId, receiverId, content]);
+
+            // ⭐ 스마트 채팅 알림 로직 (알림 도배 방지)
+            const notiMessage = `💬 [${senderName}]님으로부터 새 메시지가 도착했습니다!`;
+            const [existNoti] = await db.query(
+                'SELECT id FROM notifications WHERE userId = ? AND message = ? AND isRead = FALSE',
+                [receiverId, notiMessage]
+            );
+            
+            // 아직 안 읽은 똑같은 알림이 없다면 새로 생성!
+            if (existNoti.length === 0) {
+                await db.query('INSERT INTO notifications (userId, message) VALUES (?, ?)', [receiverId, notiMessage]);
+            }
+        }
+        res.redirect('/chat/' + receiverId);
+    } catch (err) { res.status(500).send("메시지 전송 오류"); }
 });
 
 module.exports = router;
