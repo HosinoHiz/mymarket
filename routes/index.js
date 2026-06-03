@@ -191,4 +191,10 @@ router.post('/chat/:sellerId', async (req, res) => {
     }
 });
 
+// 알림 전체 읽음 처리
+router.post('/notifications/read-all', async (req, res) => {
+    await db.query('UPDATE notifications SET isRead = TRUE WHERE userId = ?', [req.session.user.id]);
+    res.json({ success: true });
+});
+
 module.exports = router;

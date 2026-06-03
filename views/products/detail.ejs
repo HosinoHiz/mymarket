@@ -12,6 +12,7 @@
         .no-image-box { height: 400px; background-color: #f1f3f5; border-bottom: 1px solid #dee2e6; display: flex; justify-content: center; align-items: center; color: #868e96; font-size: 18px; font-weight: 500; }
         .content-box { white-space: pre-line; min-height: 150px; }
         .seller-box { background-color: #f8f9fa; border-radius: 10px; padding: 15px; }
+        .product-info-meta { font-size: 0.9rem; color: #6c757d; }
     </style>
 </head>
 <body>
@@ -27,16 +28,26 @@
                     <% } %>
 
                     <div class="card-body p-4">
-                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start mb-3">
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start mb-2">
                             <div>
                                 <h2 class="fw-bold mb-2"><%= product.title %></h2>
-                                <% if (product.status === 'soldout') { %>
-                                    <span class="badge bg-secondary fs-6">판매완료</span>
-                                <% } else { %>
-                                    <span class="badge bg-success fs-6">판매중</span>
-                                <% } %>
+                                <div class="mb-2">
+                                    <% if (product.status === 'on_sale') { %>
+                                        <span class="badge bg-success fs-6">판매중</span>
+                                    <% } else if (product.status === 'reserved') { %>
+                                        <span class="badge bg-warning text-dark fs-6">예약중</span>
+                                    <% } else if (product.status === 'sold_out' || product.status === 'soldout') { %>
+                                        <span class="badge bg-secondary fs-6">거래완료</span>
+                                    <% } %>
+                                </div>
                             </div>
-                            <h3 class="text-danger mt-3 mt-md-0"><%= Number(product.price || 0).toLocaleString() %>원</h3>
+                            <h3 class="text-danger mt-2 mt-md-0"><%= Number(product.price || 0).toLocaleString() %>원</h3>
+                        </div>
+
+                        <div class="product-info-meta mb-3">
+                            <span class="me-3"><i class="bi bi-geo-alt"></i> <%= product.location || '지역 정보 없음' %></span>
+                            <span class="me-3"><i class="bi bi-eye"></i> 조회 <%= product.views || 0 %></span>
+                            <span><i class="bi bi-chat-left-dots"></i> 채팅 <%= product.chatCount || 0 %></span>
                         </div>
 
                         <hr>
@@ -71,14 +82,27 @@
                             </div>
                         </div>
 
-                        <div class="d-flex justify-content-end gap-2">
+                        <div class="d-flex flex-wrap justify-content-end gap-2">
                             <% if (user) { %>
                                 <% if (user.id === product.userId) { %>
+                                    <form action="/products/edit-status/<%= product.id %>" method="POST" class="me-auto">
+                                        <div class="input-group">
+                                            <label class="input-group-text" for="statusSelect">상태 변경</label>
+                                            <select name="status" class="form-select" id="statusSelect" onchange="this.form.submit()">
+                                                <option value="on_sale" <%= product.status === 'on_sale' ? 'selected' : '' %>>판매중</option>
+                                                <option value="reserved" <%= product.status === 'reserved' ? 'selected' : '' %>>예약중</option>
+                                                <option value="sold_out" <%= (product.status === 'sold_out' || product.status === 'soldout') ? 'selected' : '' %>>거래완료</option>
+                                            </select>
+                                        </div>
+                                    </form>
+
                                     <a href="/products/edit/<%= product.id %>" class="btn btn-warning">수정</a>
                                     <a href="/products/delete/<%= product.id %>" class="btn btn-danger" onclick="return confirm('정말 삭제하시겠습니까?')">삭제</a>
                                 <% } else { %>
-                                    <% if (product.status === 'soldout') { %>
+                                    <% if (product.status === 'sold_out' || product.status === 'soldout') { %>
                                         <button class="btn btn-secondary" disabled>판매완료된 상품입니다</button>
+                                    <% } else if (product.status === 'reserved') { %>
+                                        <button class="btn btn-warning" disabled>예약 진행 중인 상품입니다</button>
                                     <% } else { %>
                                         <button class="btn btn-primary" onclick="buyProduct('<%= product.id %>')">구매 예약하기</button>
                                     <% } %>
