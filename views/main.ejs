@@ -2,24 +2,9 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MyMarket - 홈</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <style>
-        body { display: flex; flex-direction: column; min-height: 100vh; margin: 0; }
-        .main-content { flex: 1; }
-        .product-img { height: 200px; object-fit: cover; background-color: #f8f9fa; }
-        /* 판매 완료 상품 이미지 흐리게 */
-        .sold-out-img { filter: grayscale(100%) opacity(0.6); }
-        .friend-section { background-color: #f0f8ff; border-radius: 15px; padding: 20px; margin-bottom: 30px; }
-        .server-section { background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: 12px; padding: 15px; margin-bottom: 25px; }
-        .card { transition: transform 0.2s; overflow: hidden; }
-        .card:hover { transform: translateY(-5px); }
-        .btn-xs { padding: 0.25rem 0.4rem; font-size: 0.75rem; }
-        .product-title { min-height: 38px; }
-        .meta-info { font-size: 0.75rem; color: #6c757d; }
-    </style>
+    <style>body { display: flex; flex-direction: column; min-height: 100vh; margin: 0; } .main-content { flex: 1; } .product-img { height: 200px; object-fit: cover; background-color: #f8f9fa; } .card:hover { transform: translateY(-5px); }</style>
 </head>
 <body class="bg-light">
 
@@ -28,16 +13,17 @@
             <a class="navbar-brand fw-bold" href="/">🛒 MyMarket</a>
             <div class="ms-auto d-flex align-items-center">
                 <% if (user) { %>
-                    <span class="text-light me-3 small d-none d-md-inline">안녕하세요, <strong><%= user.userId %></strong>님!</span>
-                    <a href="/notifications" class="btn btn-warning btn-sm position-relative me-2">
-                        🔔 알림
+                    <span class="text-light me-3 small">
+                        <strong><%= user.userId %></strong>님!
+                        <span class="badge bg-warning text-dark ms-2" style="font-size:14px;">💰 <%= typeof userBalance !== 'undefined' ? Number(userBalance).toLocaleString() : 0 %>원</span>
+                    </span>
+                    <a href="/notifications" class="btn btn-danger btn-sm position-relative me-2">
+                        🔔 
                         <% if (typeof notifications !== 'undefined' && notifications.length > 0) { %>
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                <%= notifications.length %>
-                            </span>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark"><%= notifications.length %></span>
                         <% } %>
                     </a>
-                    <a href="/chat" class="btn btn-success btn-sm me-3">💬 채팅</a>
+                    <a href="/chat" class="btn btn-success btn-sm me-3">💬</a>
                     <a href="/auth/profile" class="btn btn-info btn-sm me-1">내 정보</a>
                     <a href="/products/write" class="btn btn-primary btn-sm me-1">등록</a>
                     <a href="/auth/logout" class="btn btn-outline-light btn-sm">로그아웃</a>
@@ -51,118 +37,39 @@
 
     <div class="main-content">
         <div class="container">
-
             <% if (typeof notifications !== 'undefined' && notifications.length > 0) { %>
-                <div class="alert alert-warning alert-dismissible fade show shadow-sm mb-4" role="alert">
-                    <h6 class="alert-heading fw-bold">🔔 새로운 알림이 있습니다!</h6>
-                    <ul class="mb-0 mt-2">
-                        <% notifications.forEach(noti => { %>
-                            <li><%= noti.message %></li>
-                        <% }); %>
-                    </ul>
-                    <form action="/notifications/clear" method="POST" class="d-inline">
-                        <button type="submit" class="btn-close" aria-label="Close"></button>
-                    </form>
+                <div class="alert alert-warning alert-dismissible fade show shadow-sm mb-4">
+                    <h6 class="fw-bold">🔔 알림 내역이 있습니다. 메뉴의 종 모양을 눌러 확인하세요.</h6>
+                    <form action="/notifications/clear" method="POST" class="d-inline"><button type="submit" class="btn-close"></button></form>
                 </div>
             <% } %>
 
-            <% if (user) { %>
-                <div class="friend-section shadow-sm border border-info">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h4 class="mb-0 text-info">🤝 친구들이 올린 최신 물품</h4>
-                        <span class="badge bg-info text-dark">친구 추천</span>
-                    </div>
-
-                    <div class="row">
-                        <% if (typeof friendProducts !== 'undefined' && friendProducts.length > 0) { %>
-                            <% friendProducts.forEach(product => { %>
-                                <div class="col-md-4 mb-3">
-                                    <div class="card h-100 border-info">
-                                        <img src="<%= product.imagePath || 'https://via.placeholder.com/300x200?text=No+Image' %>" 
-                                             class="card-img-top product-img <%= (product.status === 'soldout' || product.status === 'sold_out') ? 'sold-out-img' : '' %>" alt="상품이미지">
-                                        <div class="card-body">
-                                            <h5 class="card-title text-truncate fs-6 product-title"><%= product.title %></h5>
-                                            <p class="card-text text-primary fw-bold mb-1"><%= Number(product.price || 0).toLocaleString() %>원</p>
-                                            <div class="meta-info mb-2">
-                                                <i class="bi bi-geo-alt"></i> <%= product.location || '지역 미지정' %>
-                                            </div>
-                                            <% if (product.status === 'on_sale') { %>
-                                                <span class="badge bg-success">판매중</span>
-                                            <% } else if (product.status === 'reserved') { %>
-                                                <span class="badge bg-warning text-dark">예약중</span>
-                                            <% } else { %>
-                                                <span class="badge bg-secondary">거래완료</span>
-                                            <% } %>
-                                        </div>
-                                        <div class="card-footer bg-white border-top-0">
-                                            <a href="/products/detail/<%= product.id %>" class="btn btn-sm btn-info w-100 text-white">상세보기</a>
-                                        </div>
+            <h3 class="mb-4 fw-bold">📦 전체 판매 물품</h3>
+            <div class="row">
+                <% if (typeof allProducts !== 'undefined' && allProducts.length > 0) { %>
+                    <% allProducts.forEach(product => { %>
+                        <div class="col-md-3 mb-4">
+                            <div class="card h-100 shadow-sm border-0">
+                                <img src="<%= product.imagePath || 'https://via.placeholder.com/300x200?text=No+Image' %>" class="card-img-top product-img" alt="상품이미지">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <h6 class="fw-bold text-truncate"><%= product.title %></h6>
+                                        <% if (product.status === 'soldout') { %><span class="badge bg-secondary">완료</span><% } else { %><span class="badge bg-success">판매중</span><% } %>
                                     </div>
+                                    <p class="text-danger fw-bold mb-1"><%= Number(product.price || 0).toLocaleString() %>원</p>
+                                    <p class="small text-muted mb-0">👁 조회: <%= product.views %> | 판매자: <%= product.ownerName %></p>
                                 </div>
-                            <% }); %>
-                        <% } else { %>
-                            <div class="col-12"><p class="text-muted text-center py-3">친구가 등록한 물품이 없습니다.</p></div>
-                        <% } %>
-                    </div>
-                </div>
-            <% } %>
-
-            <div class="all-products pb-5">
-                <h3 class="mb-4">📦 전체 판매 물품</h3>
-                <div class="row">
-                    <% if (typeof allProducts !== 'undefined' && allProducts.length > 0) { %>
-                        <% allProducts.forEach(product => { %>
-                            <div class="col-md-3 col-sm-6 mb-4">
-                                <div class="card h-100 shadow-sm">
-                                    <img src="<%= product.imagePath || 'https://via.placeholder.com/300x200?text=No+Image' %>" 
-                                         class="card-img-top product-img <%= (product.status === 'soldout' || product.status === 'sold_out') ? 'sold-out-img' : '' %>" alt="상품이미지">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-start mb-1">
-                                            <h5 class="card-title text-truncate fs-6 product-title mb-0"><%= product.title %></h5>
-                                        </div>
-                                        <p class="card-text text-danger fw-bold mb-1"><%= Number(product.price || 0).toLocaleString() %>원</p>
-                                        
-                                        <div class="meta-info mb-2">
-                                            <div class="text-truncate"><i class="bi bi-geo-alt"></i> <%= product.location || '지역 미지정' %></div>
-                                            <div><i class="bi bi-eye"></i> <%= product.views || 0 %> · <i class="bi bi-person"></i> <%= product.ownerName %></div>
-                                        </div>
-
-                                        <% if (product.status === 'on_sale') { %>
-                                            <span class="badge bg-success">판매중</span>
-                                        <% } else if (product.status === 'reserved') { %>
-                                            <span class="badge bg-warning text-dark">예약중</span>
-                                        <% } else { %>
-                                            <span class="badge bg-secondary">거래완료</span>
-                                        <% } %>
-                                    </div>
-                                    <div class="card-footer bg-white border-top-0 pb-3">
-                                        <div class="d-grid gap-2">
-                                            <a href="/products/detail/<%= product.id %>" class="btn btn-sm btn-outline-secondary">상세보기</a>
-                                            <% if (user && user.id === product.userId) { %>
-                                                <div class="btn-group w-100">
-                                                    <a href="/products/edit/<%= product.id %>" class="btn btn-warning btn-xs text-dark">수정</a>
-                                                    <a href="/products/delete/<%= product.id %>" class="btn btn-danger btn-xs" onclick="return confirm('정말 삭제하시겠습니까?')">삭제</a>
-                                                </div>
-                                            <% } %>
-                                        </div>
-                                    </div>
+                                <div class="card-footer bg-white pb-3 border-0">
+                                    <a href="/products/detail/<%= product.id %>" class="btn btn-sm btn-outline-secondary w-100">상세보기</a>
                                 </div>
                             </div>
-                        <% }); %>
-                    <% } else { %>
-                        <div class="col-12 text-center py-5">
-                            <p class="text-muted">등록된 물품이 없습니다.</p>
                         </div>
-                    <% } %>
-                </div>
+                    <% }); %>
+                <% } else { %>
+                    <p class="text-center text-muted py-5">물품이 없습니다.</p>
+                <% } %>
             </div>
-
         </div>
     </div>
-
-    <footer class="bg-dark text-white text-center py-3 mt-auto shadow-lg">
-        <small>&copy; 2026 MyMarket Project.</small>
-    </footer>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

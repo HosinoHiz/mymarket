@@ -3,124 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <title><%= product.title %> - 상세보기</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <style>
-        body { background-color: #f8f9fa; }
-        .detail-img { max-height: 500px; width: 100%; object-fit: contain; background-color: #f8f9fa; border-bottom: 1px solid #dee2e6; }
-        .no-image-box { height: 400px; background-color: #f1f3f5; border-bottom: 1px solid #dee2e6; display: flex; justify-content: center; align-items: center; color: #868e96; font-size: 18px; font-weight: 500; }
-        .content-box { white-space: pre-line; min-height: 150px; }
-        .seller-box { background-color: #f8f9fa; border-radius: 10px; padding: 15px; }
-        .product-info-meta { font-size: 0.9rem; color: #6c757d; }
-    </style>
+    <style>body{background-color:#f8f9fa;}.detail-img{max-height:500px;width:100%;object-fit:contain;background-color:#fff;border-bottom:1px solid #dee2e6;}</style>
 </head>
 <body>
     <div class="container mt-5 mb-5">
-        <div class="row justify-content-center">
-            <div class="col-md-9">
-                <div class="card shadow p-0">
-                    
-                    <% if (product.imagePath) { %>
-                        <img src="<%= product.imagePath %>" class="detail-img card-img-top" alt="상품이미지">
-                    <% } else { %>
-                        <div class="no-image-box">이미지 없음</div>
+        <div class="card shadow p-0 col-md-8 mx-auto">
+            <img src="<%= product.imagePath || 'https://via.placeholder.com/600x400?text=No+Image' %>" class="detail-img card-img-top">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h2 class="fw-bold mb-0"><%= product.title %> <% if (product.status === 'soldout') { %><span class="badge bg-secondary fs-6 align-middle">판매완료</span><% } %></h2>
+                    <h3 class="text-danger mb-0"><%= Number(product.price).toLocaleString() %>원</h3>
+                </div>
+                <p class="text-muted small">👁 조회수: <%= product.views %> | 📍 지역: <%= product.location || '정보없음' %></p>
+                <hr>
+                <p style="white-space: pre-line; min-height: 100px;"><%= product.content %></p>
+                <hr>
+                
+                <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded mb-4">
+                    <span class="text-secondary">판매자: <strong><%= product.ownerName %></strong></span>
+                    <% if (user && user.id !== product.userId) { %>
+                        <a href="/chat/<%= product.userId %>" class="btn btn-sm btn-success">💬 1:1 채팅</a>
                     <% } %>
+                </div>
 
-                    <div class="card-body p-4">
-                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start mb-2">
-                            <div>
-                                <h2 class="fw-bold mb-2"><%= product.title %></h2>
-                                <div class="mb-2">
-                                    <% if (product.status === 'on_sale') { %>
-                                        <span class="badge bg-success fs-6">판매중</span>
-                                    <% } else if (product.status === 'reserved') { %>
-                                        <span class="badge bg-warning text-dark fs-6">예약중</span>
-                                    <% } else if (product.status === 'sold_out' || product.status === 'soldout') { %>
-                                        <span class="badge bg-secondary fs-6">거래완료</span>
-                                    <% } %>
-                                </div>
-                            </div>
-                            <h3 class="text-danger mt-2 mt-md-0"><%= Number(product.price || 0).toLocaleString() %>원</h3>
-                        </div>
-
-                        <div class="product-info-meta mb-3">
-                            <span class="me-3"><i class="bi bi-geo-alt"></i> <%= product.location || '지역 정보 없음' %></span>
-                            <span class="me-3"><i class="bi bi-eye"></i> 조회 <%= product.views || 0 %></span>
-                            <span><i class="bi bi-chat-left-dots"></i> 채팅 <%= product.chatCount || 0 %></span>
-                        </div>
-
-                        <hr>
-                        <h5 class="fw-bold mb-3">상품 설명</h5>
-                        <p class="text-muted content-box"><%= product.content || '상품 설명이 없습니다.' %></p>
-                        <hr>
-
-                        <div class="seller-box mb-4">
-                            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
-                                <div class="mb-3 mb-md-0">
-                                    <span class="text-secondary">
-                                        판매자: <strong><%= product.ownerName || '알 수 없음' %></strong>
-                                    </span>
-
-                                    <% if (user && user.id !== product.userId) { %>
-                                        <a href="/chat/<%= product.userId %>" class="btn btn-sm btn-success ms-2">
-                                            <i class="bi bi-chat-dots"></i> 채팅하기
-                                        </a>
-
-                                        <% if (typeof isFriend !== 'undefined' && isFriend) { %>
-                                            <button class="btn btn-sm btn-secondary ms-2" disabled>
-                                                <i class="bi bi-person-check-fill"></i> 이미 친구입니다
-                                            </button>
-                                        <% } else { %>
-                                            <a href="/add-friend/<%= product.userId %>" class="btn btn-sm btn-outline-info ms-2" onclick="return confirm('이 판매자를 친구로 추가하시겠습니까?')">
-                                                <i class="bi bi-person-plus"></i> 친구추가
-                                            </a>
-                                        <% } %>
-                                    <% } %>
-                                </div>
-                                <a href="/" class="btn btn-outline-secondary">목록으로</a>
-                            </div>
-                        </div>
-
-                        <div class="d-flex flex-wrap justify-content-end gap-2">
-                            <% if (user) { %>
-                                <% if (user.id === product.userId) { %>
-                                    <form action="/products/edit-status/<%= product.id %>" method="POST" class="me-auto">
-                                        <div class="input-group">
-                                            <label class="input-group-text" for="statusSelect">상태 변경</label>
-                                            <select name="status" class="form-select" id="statusSelect" onchange="this.form.submit()">
-                                                <option value="on_sale" <%= product.status === 'on_sale' ? 'selected' : '' %>>판매중</option>
-                                                <option value="reserved" <%= product.status === 'reserved' ? 'selected' : '' %>>예약중</option>
-                                                <option value="sold_out" <%= (product.status === 'sold_out' || product.status === 'soldout') ? 'selected' : '' %>>거래완료</option>
-                                            </select>
-                                        </div>
-                                    </form>
-
-                                    <a href="/products/edit/<%= product.id %>" class="btn btn-warning">수정</a>
-                                    <a href="/products/delete/<%= product.id %>" class="btn btn-danger" onclick="return confirm('정말 삭제하시겠습니까?')">삭제</a>
-                                <% } else { %>
-                                    <% if (product.status === 'sold_out' || product.status === 'soldout') { %>
-                                        <button class="btn btn-secondary" disabled>판매완료된 상품입니다</button>
-                                    <% } else if (product.status === 'reserved') { %>
-                                        <button class="btn btn-warning" disabled>예약 진행 중인 상품입니다</button>
-                                    <% } else { %>
-                                        <button class="btn btn-primary" onclick="buyProduct('<%= product.id %>')">구매 예약하기</button>
-                                    <% } %>
-                                <% } %>
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="/" class="btn btn-outline-secondary">목록으로</a>
+                    <% if (user) { %>
+                        <% if (user.id === product.userId) { %>
+                            <a href="/products/edit/<%= product.id %>" class="btn btn-warning">수정</a>
+                            <a href="/products/delete/<%= product.id %>" class="btn btn-danger" onclick="return confirm('삭제할까요?')">삭제</a>
+                        <% } else { %>
+                            <% if (product.status === 'soldout') { %>
+                                <button class="btn btn-secondary" disabled>판매완료 됨</button>
                             <% } else { %>
-                                <a href="/auth/login" class="btn btn-primary">로그인 후 이용 가능</a>
+                                <button class="btn btn-warning" onclick="requestBargain('<%= product.id %>', <%= product.price %>)">🤝 더 싸게 흥정하기</button>
+                                <button class="btn btn-primary" onclick="buyProduct('<%= product.id %>', <%= product.price %>)">💳 정가로 바로구매</button>
                             <% } %>
-                        </div>
-                    </div>
+                        <% } %>
+                    <% } %>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        function buyProduct(id) {
-            if (confirm('이 물건을 구매 예약하시겠습니까?')) {
+        function buyProduct(id, price) {
+            if (confirm(`정가 ${price.toLocaleString()}원에 바로 결제하여 구매하시겠습니까?\n(보유 금액에서 즉시 차감됩니다)`)) {
                 location.href = '/products/buy/' + id;
+            }
+        }
+
+        // ⭐ 흥정 스크립트 추가
+        function requestBargain(id, originalPrice) {
+            const price = prompt(`현재 가격: ${originalPrice.toLocaleString()}원\n원하시는 흥정 가격을 입력하세요 (숫자만):`);
+            if (price) {
+                const numPrice = Number(price);
+                if (isNaN(numPrice) || numPrice < 0) return alert('올바른 숫자를 입력해주세요.');
+                if (numPrice >= originalPrice) return alert('원래 가격보다 낮은 가격을 입력하셔야 흥정입니다!');
+                
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/products/bargain/' + id;
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'offerPrice';
+                input.value = numPrice;
+                form.appendChild(input);
+                document.body.appendChild(form);
+                form.submit();
             }
         }
     </script>
