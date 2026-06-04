@@ -2,29 +2,69 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>내 채팅 목록</title>
+    <title>채팅 목록 - 한국교통대학교장터</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root { --knut-color: #8A1538; --knut-hover: #6b102b; }
+        body { background-color: #f4f6f8; font-family: 'Pretendard', sans-serif; }
+        .bg-knut { background-color: var(--knut-color) !important; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .text-knut { color: var(--knut-color) !important; }
+        .btn-knut { background-color: var(--knut-color); border-color: var(--knut-color); color: white; transition: all 0.2s; }
+        .btn-knut:hover { background-color: var(--knut-hover); border-color: var(--knut-hover); color: white; transform: translateY(-2px); }
+        
+        .chat-list-card { border-radius: 20px; border: none; box-shadow: 0 15px 35px rgba(0,0,0,0.05); overflow: hidden; background: white; }
+        .list-group-item { border-left: none; border-right: none; padding: 20px; transition: all 0.2s; border-bottom: 1px solid #f0f0f0; }
+        
+        /* 마우스를 올렸을 때 오른쪽으로 살짝 이동하는 애니메이션 */
+        .list-group-item:hover { background-color: #fafbfa; transform: translateX(8px); }
+        .list-group-item:last-child { border-bottom: none; }
+        
+        /* 예쁜 원형 프로필 아바타 */
+        .avatar-circle { width: 55px; height: 55px; background-color: #fff0f4; color: var(--knut-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 900; }
+    </style>
 </head>
-<body class="bg-light">
-    <div class="container mt-5" style="max-width: 600px;">
-        <div class="card shadow">
-            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">💬 내 채팅방 목록</h5>
-                <a href="/" class="btn btn-sm btn-light">홈으로</a>
+<body>
+    <nav class="navbar navbar-dark bg-knut mb-5">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-4" href="/">🎓 한국교통대학교장터</a>
+            <div>
+                <a href="javascript:history.back()" class="btn btn-outline-light btn-sm me-2 rounded-pill fw-bold px-3">🔙 뒤로가기</a>
+                <a href="/" class="btn btn-light btn-sm rounded-pill fw-bold text-knut px-3">🏠 홈으로</a>
             </div>
+        </div>
+    </nav>
+
+    <div class="container mb-5" style="max-width: 700px;">
+        <div class="card chat-list-card">
+            <div class="card-header bg-knut text-white p-4 border-0 d-flex justify-content-between align-items-center">
+                <h4 class="mb-0 fw-bold">💬 내 채팅 목록</h4>
+            </div>
+            
             <div class="card-body p-0">
-                <ul class="list-group list-group-flush">
-                    <% if (chatUsers.length === 0) { %>
-                        <li class="list-group-item text-center text-muted py-5">진행 중인 채팅이 없습니다.</li>
-                    <% } else { %>
+                <% if (typeof chatUsers === 'undefined' || chatUsers.length === 0) { %>
+                    <div class="text-center py-5">
+                        <h4 class="text-muted mb-3 mt-4 fw-bold">진행 중인 대화가 없습니다 📭</h4>
+                        <p class="text-secondary mb-4">상품 상세 페이지에서 판매자에게 먼저 인사를 건네보세요!</p>
+                        <a href="/" class="btn btn-knut rounded-pill px-4 fw-bold shadow-sm">물건 구경하러 가기</a>
+                    </div>
+                <% } else { %>
+                    <div class="list-group list-group-flush">
                         <% chatUsers.forEach(u => { %>
-                            <a href="/chat/<%= u.id %>" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3">
-                                <span class="fw-bold"><%= u.userId %>님과의 대화</span>
-                                <span class="badge bg-primary rounded-pill">입장하기</span>
+                            <!-- 대화방 입장 링크 -->
+                            <a href="/chat/<%= u.id %>" class="list-group-item list-group-item-action d-flex align-items-center text-decoration-none">
+                                <!-- 상대방 아이디 첫 글자를 딴 귀여운 아바타 -->
+                                <div class="avatar-circle me-3 shadow-sm">
+                                    <%= u.userId.charAt(0).toUpperCase() %>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h5 class="mb-1 fw-bold text-dark"><%= u.userId %> <span class="fs-6 text-muted fw-normal">학우</span></h5>
+                                    <p class="mb-0 text-muted small">대화방 입장하기 ❯</p>
+                                </div>
+                                <span class="badge bg-light text-knut border px-3 py-2 rounded-pill shadow-sm">입장</span>
                             </a>
                         <% }) %>
-                    <% } %>
-                </ul>
+                    </div>
+                <% } %>
             </div>
         </div>
     </div>
