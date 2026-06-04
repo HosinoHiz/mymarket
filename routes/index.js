@@ -103,4 +103,12 @@ router.get('/api/noti-check', async (req, res) => {
     } catch(err) { res.json({ count: 0 }); }
 });
 
+// ⭐ 내 친구 목록 불러오기 API (가로 스크롤 UI용)
+router.get('/api/friends', async (req, res) => {
+    if (!req.session.user) return res.json([]);
+    try {
+        const [rows] = await db.query('SELECT u.id, u.userId FROM friends f JOIN users u ON f.friendId = u.id WHERE f.userId = ?', [req.session.user.id]);
+        res.json(rows);
+    } catch(err) { res.json([]); }
+});
 module.exports = router;
