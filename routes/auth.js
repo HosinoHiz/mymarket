@@ -118,4 +118,29 @@ router.post('/transfer', async (req, res) => {
     } catch (err) { res.status(500).send("송금 오류"); }
 });
 
+// ⭐ 회원 탈퇴 처리 API
+router.get('/delete', async (req, res) => {
+    // 1. 로그인 상태인지 확인
+    if (!req.session.user) {
+        return res.send("<script>alert('로그인 상태에서만 탈퇴가 가능합니다.'); location.href='/auth/login';</script>");
+    }
+
+    try {
+        const userId = req.session.user.id;
+
+        // 2. DB에서 유저 삭제 
+        // (미리 설정해둔 ON DELETE CASCADE 덕분에 관련된 상품, 채팅, 친구, 장바구니 내역까지 깔끔하게 자동 삭제됩니다!)
+        await db.query('DELETE FROM users WHERE id = ?', [userId]);
+
+        // 3. 세션 파기 (로그아웃 처리)
+        req.session.destroy((err) => {
+            if (err) console.error('세션 파기 오류:', err);
+            res.send("<script>alert('회원 탈퇴가 정상적으로 완료되었습니다. 그동안 한국교통대학교장터를 이용해주셔서 감사합니다! 🎓'); location.href='/';</script>");
+        });
+    } catch (err) {
+        console.error('회원 탈퇴 오류:', err);
+        res.status(500).send("<script>alert('회원 탈퇴 처리 중 오류가 발생했습니다. 관리자에게 문의해주세요.'); history.back();</script>");
+    }
+});
+
 module.exports = router;
