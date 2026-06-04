@@ -16,10 +16,20 @@
                 <a href="/auth/profile/edit" class="btn btn-sm btn-light">정보 수정</a>
             </div>
             <div class="card-body p-4">
-                <div class="alert alert-warning d-flex justify-content-between align-items-center mb-4">
+                <div class="alert alert-warning d-flex justify-content-between align-items-center mb-3">
                     <h5 class="mb-0 text-dark fw-bold">💰 나의 보유 금액</h5>
                     <h4 class="mb-0 text-danger fw-bold"><%= Number(profile.balance).toLocaleString() %> 원</h4>
                 </div>
+                
+                <div class="bg-light p-3 rounded border mb-4">
+                    <h6 class="fw-bold mb-2">💸 이웃에게 간편 송금하기</h6>
+                    <form action="/auth/transfer" method="POST" class="d-flex gap-2 align-items-center">
+                        <input type="text" name="targetUserId" class="form-control" placeholder="받는 사람 아이디" required>
+                        <input type="number" name="amount" class="form-control" placeholder="송금할 금액" required min="1">
+                        <button type="submit" class="btn btn-success fw-bold" style="white-space: nowrap;">송금</button>
+                    </form>
+                </div>
+
                 <div class="mb-2 d-flex"><div style="width:100px;" class="fw-bold text-muted">아이디</div><div><%= profile.userId %></div></div>
                 <div class="mb-4 d-flex"><div style="width:100px;" class="fw-bold text-muted">회원 번호</div><div>#<%= profile.id %></div></div>
                 <hr>
@@ -42,19 +52,11 @@
                     <div class="row">
                         <% purchasedProducts.forEach(p => { %>
                             <div class="col-md-6 mb-3">
-                                <div class="card h-100 border-success">
-                                    <div class="card-body">
-                                        <h6 class="fw-bold text-truncate"><%= p.title %></h6>
-                                        <p class="text-danger mb-0"><%= Number(p.price).toLocaleString() %>원 결제됨</p>
-                                    </div>
-                                </div>
+                                <div class="card h-100 border-success"><div class="card-body"><h6 class="fw-bold text-truncate"><%= p.title %></h6><p class="text-danger mb-0"><%= Number(p.price).toLocaleString() %>원 결제됨</p></div></div>
                             </div>
                         <% }) %>
                     </div>
-                <% } else { %>
-                    <div class="bg-light rounded p-4 text-center text-muted border">아직 구매한 물품이 없습니다. 쇼핑을 즐겨보세요!</div>
-                <% } %>
-
+                <% } else { %><div class="bg-light rounded p-4 text-center text-muted border">아직 구매한 물품이 없습니다.</div><% } %>
             </div>
         </div>
     </div>

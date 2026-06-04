@@ -94,4 +94,13 @@ router.get('/cart/remove/:cartId', async (req, res) => {
     res.redirect('/cart');
 });
 
+// ⭐ 알림 자동 리프레쉬를 위한 안 읽은 알림 개수 확인 API
+router.get('/api/noti-check', async (req, res) => {
+    if (!req.session.user) return res.json({ count: 0 });
+    try {
+        const [rows] = await db.query('SELECT COUNT(*) as cnt FROM notifications WHERE userId = ? AND isRead = FALSE', [req.session.user.id]);
+        res.json({ count: rows[0].cnt });
+    } catch(err) { res.json({ count: 0 }); }
+});
+
 module.exports = router;

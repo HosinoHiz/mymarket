@@ -8,24 +8,19 @@
 </head>
 <body>
     <nav class="navbar navbar-dark bg-dark mb-4 shadow-sm">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="/">🛒 MyMarket</a>
-            <div>
-                <a href="javascript:history.back()" class="btn btn-outline-light btn-sm me-2">🔙 뒤로가기</a>
-                <a href="/" class="btn btn-primary btn-sm">🏠 홈으로</a>
-            </div>
+        <div class="container"><a class="navbar-brand fw-bold" href="/">🛒 MyMarket</a>
+            <div><a href="javascript:history.back()" class="btn btn-outline-light btn-sm me-2">🔙 뒤로가기</a><a href="/" class="btn btn-primary btn-sm">🏠 홈으로</a></div>
         </div>
     </nav>
     <div class="container mb-5">
         <div class="card shadow border-0 col-md-8 mx-auto">
-            <img src="<%= product.imagePath || 'https://via.placeholder.com/600x400?text=No+Image' %>" class="detail-img card-img-top">
+            <img src="<%= product.imagePath || 'https://via.placeholder.com/600x400' %>" class="detail-img card-img-top">
             <div class="card-body p-4">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h2 class="fw-bold mb-0">
-                        <%= product.title %> 
-                        <% if (product.status === 'soldout') { %><span class="badge bg-secondary fs-6 align-middle">판매완료</span>
-                        <% } else if (product.status === 'reserved') { %><span class="badge bg-warning text-dark fs-6 align-middle">예약중</span>
-                        <% } else { %><span class="badge bg-success fs-6 align-middle">판매중</span><% } %>
+                    <h2 class="fw-bold mb-0"><%= product.title %> 
+                        <% if (product.status === 'soldout') { %><span class="badge bg-secondary fs-6">판매완료</span>
+                        <% } else if (product.status === 'reserved') { %><span class="badge bg-warning text-dark fs-6">예약중</span>
+                        <% } else { %><span class="badge bg-success fs-6">판매중</span><% } %>
                     </h2>
                     <h3 class="text-danger mb-0"><%= Number(product.price).toLocaleString() %>원</h3>
                 </div>
@@ -35,7 +30,12 @@
                 <hr>
                 <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded mb-4">
                     <span class="text-secondary">판매자: <strong><%= product.ownerName %></strong></span>
-                    <% if (user && user.id !== product.userId) { %><a href="/chat/<%= product.userId %>" class="btn btn-sm btn-success">💬 1:1 채팅</a><% } %>
+                    <% if (user && user.id !== product.userId) { %>
+                        <div>
+                            <a href="/chat/<%= product.userId %>" class="btn btn-sm btn-success me-1">💬 채팅</a>
+                            <a href="/add-friend/<%= product.userId %>" class="btn btn-sm btn-info text-white" onclick="return confirm('이 사용자를 친구로 추가할까요?')">🤝 친구추가</a>
+                        </div>
+                    <% } %>
                 </div>
                 <div class="d-flex justify-content-end gap-2 align-items-center">
                     <% if (user) { %>
@@ -50,10 +50,8 @@
                             <a href="/products/edit/<%= product.id %>" class="btn btn-warning">수정</a>
                             <a href="/products/delete/<%= product.id %>" class="btn btn-danger" onclick="return confirm('삭제할까요?')">삭제</a>
                         <% } else { %>
-                            <% if (product.status === 'soldout') { %>
-                                <button class="btn btn-secondary" disabled>판매완료 됨</button>
-                            <% } else if (product.status === 'reserved') { %>
-                                <button class="btn btn-warning" disabled>현재 예약 진행 중</button>
+                            <% if (product.status === 'soldout') { %><button class="btn btn-secondary" disabled>판매완료 됨</button>
+                            <% } else if (product.status === 'reserved') { %><button class="btn btn-warning" disabled>현재 예약 진행 중</button>
                             <% } else { %>
                                 <a href="/products/cart/<%= product.id %>" class="btn btn-outline-secondary">🛒 장바구니 담기</a>
                                 <button class="btn btn-warning" onclick="requestBargain('<%= product.id %>', <%= product.price %>)">🤝 흥정하기</button>
@@ -65,25 +63,16 @@
             </div>
         </div>
     </div>
-    
     <script>
         function buyProduct(id, price) { if (confirm(`정가 ${price.toLocaleString()}원에 바로 결제하시겠습니까?`)) location.href = '/products/buy/' + id; }
-        
-        // ⭐ 프론트엔드 - 최대 15% 할인 방어 로직
         function requestBargain(id, originalPrice) {
-            // 85% 가격(15% 할인) 계산 후 소수점 올림 처리
             const minPrice = Math.ceil(originalPrice * 0.85); 
-            
-            const price = prompt(`현재 가격: ${originalPrice.toLocaleString()}원\n최대 15% 할인 가능 (최소 ${minPrice.toLocaleString()}원 이상 입력)\n\n원하시는 흥정 가격을 입력하세요 (숫자만):`);
-            
+            const price = prompt(`현재 가격: ${originalPrice.toLocaleString()}원\n최대 15% 할인 가능 (최소 ${minPrice.toLocaleString()}원 이상)\n\n원하시는 흥정 가격을 입력하세요:`);
             if (price) {
                 const numPrice = Number(price);
                 if (isNaN(numPrice) || numPrice < 0) return alert('올바른 숫자를 입력해주세요.');
                 if (numPrice >= originalPrice) return alert('원래 가격보다 낮은 가격을 입력하셔야 흥정입니다!');
-                
-                // ⭐ 15% 이상 깎으려고 하면 팝업으로 차단
-                if (numPrice < minPrice) return alert(`너무 많이 깎으셨네요! 😅\n이 상품은 최대 15% 할인된 [${minPrice.toLocaleString()}원] 까지만 흥정할 수 있습니다.`);
-                
+                if (numPrice < minPrice) return alert(`최대 15% 할인된 [${minPrice.toLocaleString()}원] 까지만 흥정 가능합니다.`);
                 const form = document.createElement('form'); form.method = 'POST'; form.action = '/products/bargain/' + id;
                 const input = document.createElement('input'); input.type = 'hidden'; input.name = 'offerPrice'; input.value = numPrice;
                 form.appendChild(input); document.body.appendChild(form); form.submit();

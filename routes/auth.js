@@ -88,5 +88,34 @@ router.post('/profile/edit', async (req, res) => {
     req.session.user.userId = userId;
     res.send("<script>alert('수정 완료!');location.href='/auth/profile';</script>");
 });
+// ⭐ 돈 송금 기능 라우터
+router.post('/transfer', async (req, res) => {
+    if (!req.session.user) return res.redirect('/auth/login');
+    try {
+        const { targetUserId, amount } = req.body;
+        const sendAmount = Number(amount);
+        const myId = req.session.user.id;
+
+        if (sendAmount <= 0) return res.send("<script>alert('올바른 금액을 입력하세요.');history.back();</script>");
+        
+        const [myRows] = await db.query('SELECT balance FROM users WHERE id = ?', [myId]);
+        if (myRows[0].balance < sendAmount) return res.send("<script>alert('잔액이 부족합니다.');history.back();</script>");
+
+        const [targetRows] = await db.query('SELECT id FROM users WHERE userId = ?', [targetUserId]);
+        if (targetRows.length === 0) return res.send("<script>alert('존재하지 않는 사용자입니다.');history.back();</script>");
+        if (targetRows[0].id === myId) return res.send("<script>alert('자신에게 송금할 수 없습니다.');history.back();</script>");
+
+        const targetId = targetRows[0].id;
+        
+        // 내 돈 빼고, 상대방 돈 늘리기
+        await db.query('UPDATE users SET balance = balance - ? WHERE id = ?', [sendAmount, myId]);
+        await db.query('UPDATE users SET balance = balance + ? WHERE id = ?', [sendAmount, targetId]);
+        
+        // 상대방에게 입금 알림 전송
+        await db.query('INSERT INTO notifications (userId, message) VALUES (?, ?)', [targetId, `💸 [${req.session.user.userId}]님으로부터 ${sendAmount.toLocaleString()}원이 입금되었습니다!`]);
+
+        res.send(`<script>alert('${targetUserId}님에게 성공적으로 송금했습니다!');location.href='/auth/profile';</script>`);
+    } catch (err) { res.status(500).send("송금 오류"); }
+});
 
 module.exports = router;

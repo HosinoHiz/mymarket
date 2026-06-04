@@ -16,14 +16,17 @@ router.get('/write', requireLogin, (req, res) => { res.render('products/write');
 
 router.post('/write', requireLogin, upload.single('document'), async (req, res) => {
     try {
-        let { title, content, price } = req.body;
+        let { title, content, price, location } = req.body;
         title = title || ''; content = content || ''; price = parsePrice(price);
+        location = location || '지역 정보 없음'; // ⭐ 지역 정보 추가
+
         if (!isValidPrice(price)) return res.send("<script>alert('가격은 0원 이상 999,999,999원 이하로 입력하세요.');history.back();</script>");
         if (!req.file || !isImageFile(req.file)) return res.send("<script>alert('상품 이미지는 필수입니다!');history.back();</script>");
         let imagePath = `/images/${req.file.filename}`;
         if (!title.trim()) return res.send("<script>alert('상품 제목을 입력하세요.');history.back();</script>");
 
-        await db.query('INSERT INTO products (title, content, price, imagePath, userId) VALUES (?, ?, ?, ?, ?)', [title, content, price, imagePath, req.session.user.id]);
+        // ⭐ DB 저장 시 location 값도 함께 저장
+        await db.query('INSERT INTO products (title, content, price, imagePath, userId, location) VALUES (?, ?, ?, ?, ?, ?)', [title, content, price, imagePath, req.session.user.id, location]);
         res.send("<script>alert('상품이 등록되었습니다.');location.href='/';</script>");
     } catch (err) { res.status(500).send("상품 등록 오류"); }
 });

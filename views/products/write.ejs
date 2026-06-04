@@ -15,16 +15,18 @@
             </div>
         </div>
     </nav>
-
     <div class="container" style="max-width: 600px;">
         <div class="card shadow border-0 mb-5">
             <div class="card-header bg-primary text-white"><h5 class="mb-0">📦 내 물건 팔기</h5></div>
             <div class="card-body p-4">
-                
                 <form action="/products/write" method="POST" enctype="multipart/form-data" onsubmit="return preventDoubleSubmit()">
                     <div class="mb-3">
                         <label class="form-label fw-bold">상품 제목</label>
                         <input type="text" name="title" class="form-control" required placeholder="예) 아이폰 15 프로 팝니다">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">거래 지역 📍 (선택)</label>
+                        <input type="text" name="location" class="form-control" placeholder="예) 시흥시 정왕동, 강남역 등">
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">판매 가격 (원)</label>
@@ -36,37 +38,23 @@
                     </div>
                     <div class="mb-4">
                         <label class="form-label fw-bold">상세 설명</label>
-                        <textarea name="content" class="form-control" rows="5" placeholder="상품의 상태, 직거래 지역 등을 자세히 적어주세요."></textarea>
+                        <textarea name="content" class="form-control" rows="5" placeholder="상품의 상태 등을 자세히 적어주세요."></textarea>
                     </div>
                     <div class="d-grid">
                         <button type="submit" id="submitBtn" class="btn btn-primary btn-lg fw-bold">상품 등록하기</button>
                     </div>
                 </form>
-
             </div>
         </div>
     </div>
-
     <script>
-        // ⭐ 연타 방지 스크립트
         let isSubmitting = false;
-
         function preventDoubleSubmit() {
-            const imgInput = document.getElementById('productImage');
-            if (!imgInput.value) {
-                alert('상품 이미지를 반드시 첨부해주세요!');
-                return false;
-            }
-
-            // 이미 제출 중이면 무시 (연타 완벽 방어)
+            if (!document.getElementById('productImage').value) { alert('상품 이미지를 첨부해주세요!'); return false; }
             if (isSubmitting) return false; 
-            
             isSubmitting = true;
             const btn = document.getElementById('submitBtn');
-            btn.innerText = '등록 중입니다 ⏳...';
-            btn.classList.replace('btn-primary', 'btn-secondary');
-            btn.style.pointerEvents = 'none'; // 마우스 클릭 원천 차단
-            
+            btn.innerText = '등록 중입니다 ⏳...'; btn.classList.replace('btn-primary', 'btn-secondary'); btn.style.pointerEvents = 'none';
             return true;
         }
     </script>
