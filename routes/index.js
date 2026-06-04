@@ -2,25 +2,50 @@ const express = require('express');
 const router = express.Router();
 const db = require('../models/db');
 
+// ⭐ 1. 메인 페이지 (친구 물건 최상단 정렬 로직 추가)
 router.get('/', async (req, res) => {
     try {
-        const user = req.session.user || null;
-        let notifications = []; let friendProducts = []; let userBalance = 0;
-
-        const [allProducts] = await db.query(`SELECT p.*, u.userId AS ownerName FROM products p JOIN users u ON p.userId = u.id ORDER BY p.id DESC`);
-
-        if (user) {
-            const [u] = await db.query('SELECT balance FROM users WHERE id = ?', [user.id]);
-            if(u.length > 0) userBalance = u[0].balance;
-
-            const [rows] = await db.query(`SELECT p.*, u.userId AS ownerName FROM products p JOIN users u ON p.userId = u.id WHERE p.userId IN (SELECT friendId FROM friends WHERE userId = ?) ORDER BY p.id DESC LIMIT 3`, [user.id]);
-            friendProducts = rows;
-
-            const [notiRows] = await db.query('SELECT * FROM notifications WHERE userId = ? AND isRead = FALSE ORDER BY id DESC', [user.id]);
-            notifications = notiRows;
+        let allProducts = [];
+        if (req.session.user) {
+            // 로그인 시: 내 친구가 올린 물건인지 확인(isFriendProduct)하여 먼저 정렬하고, 그다음 최신순 정렬
+            const [products] = await db.query(`
+                SELECT p.*, u.userId AS ownerName,
+                       IF(f.friendId IS NOT NULL, 1, 0) AS isFriendProduct
+                FROM products p
+                JOIN users u ON p.userId = u.id
+                LEFT JOIN friends f ON p.userId = f.friendId AND f.userId = ?
+                ORDER BY isFriendProduct DESC, p.id DESC
+            `, [req.session.user.id]);
+            allProducts = products;
+        } else {
+            // 비로그인 시: 일반 최신순 정렬
+            const [products] = await db.query('SELECT p.*, u.userId AS ownerName FROM products p JOIN users u ON p.userId = u.id ORDER BY p.id DESC');
+            allProducts = products;
         }
-        res.render('main', { user, allProducts, friendProducts, notifications, userBalance });
+        res.render('main', { 
+            user: req.session.user, 
+            userBalance: req.session.user ? req.session.user.balance : 0,
+            allProducts 
+        });
     } catch (err) { res.status(500).send("메인 페이지 오류"); }
+});
+
+// ⭐ 2. 친구 추가 기능 (중복 방지 로직 추가)
+router.get('/add-friend/:id', async (req, res) => {
+    if (!req.session.user) return res.send("<script>alert('로그인이 필요합니다.');location.href='/auth/login';</script>");
+    try {
+        const myId = req.session.user.id;
+        const targetId = req.params.id;
+        
+        if (myId == targetId) return res.send("<script>alert('자기 자신은 친구로 추가할 수 없습니다.');history.back();</script>");
+        
+        // 이미 친구인지 DB에서 검사
+        const [existing] = await db.query('SELECT * FROM friends WHERE userId = ? AND friendId = ?', [myId, targetId]);
+        if (existing.length > 0) return res.send("<script>alert('이미 친구로 등록된 학우입니다!');history.back();</script>");
+        
+        await db.query('INSERT INTO friends (userId, friendId) VALUES (?, ?)', [myId, targetId]);
+        res.send("<script>alert('친구 추가 완료! 이제 이 학우의 물건이 메인 화면 최상단에 먼저 보입니다.');history.back();</script>");
+    } catch(err) { res.status(500).send("친구 추가 오류"); }
 });
 
 router.post('/notifications/clear', async (req, res) => {

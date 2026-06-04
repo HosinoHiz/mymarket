@@ -57,7 +57,12 @@
                     <span class="text-secondary fw-bold">거래 전 판매자에게 인사해보세요! 👋</span>
                     <% if (user && user.id !== product.userId) { %>
                         <div class="d-flex gap-2">
-                            <a href="/add-friend/<%= product.userId %>" class="btn btn-outline-secondary fw-bold rounded-pill px-3" onclick="return confirm('이 사용자를 친구로 추가할까요?')">🤝 친구추가</a>
+                            <!-- ⭐ 이미 친구라면 버튼을 회색으로 비활성화 -->
+                            <% if (isFriend) { %>
+                                <button class="btn btn-secondary fw-bold rounded-pill px-3 shadow-sm" disabled>🤝 내 친구</button>
+                            <% } else { %>
+                                <a href="/add-friend/<%= product.userId %>" class="btn btn-outline-secondary fw-bold rounded-pill px-3 shadow-sm" onclick="return confirm('이 학우를 친구로 추가할까요?')">🤝 친구추가</a>
+                            <% } %>
                             <a href="/chat/<%= product.userId %>" class="btn btn-knut fw-bold rounded-pill px-4 shadow-sm">💬 채팅하기</a>
                         </div>
                     <% } else if (user && user.id === product.userId) { %>

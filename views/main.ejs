@@ -94,7 +94,13 @@
                     <% }); %>
                 <% } else { %>
                     <div class="col-12 text-center py-5">
-                        <h5 class="text-muted fw-bold">아직 등록된 상품이 없습니다. 첫 상품을 등록해 보세요!</h5>
+                        <h5 class="card-title text-truncate">
+                            <!-- ⭐ 친구의 물건일 경우 제목 앞에 배지 표시 -->
+                            <% if (typeof product.isFriendProduct !== 'undefined' && product.isFriendProduct === 1) { %>
+                                <span class="badge bg-info text-white me-1 shadow-sm" style="font-size: 0.75rem; border-radius: 12px; background-color: #0dcaf0 !important;">🤝 내 친구</span>
+                            <% } %>
+                            <%= product.title %>
+                        </h5>
                     </div>
                 <% } %>
             </div>
