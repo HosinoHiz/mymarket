@@ -23,7 +23,9 @@
                     </a>
                     <a href="/chat" class="btn btn-success btn-sm me-3">💬</a>
                     <a href="/auth/profile" class="btn btn-info btn-sm me-1">내 정보</a>
-                    <a href="/products/write" class="btn btn-primary btn-sm me-1">등록</a>
+                    
+                    <a href="/products/write" class="btn btn-primary btn-sm me-1">상품등록</a>
+                    
                     <a href="/auth/logout" class="btn btn-outline-light btn-sm">로그아웃</a>
                 <% } else { %>
                     <a href="/auth/login" class="btn btn-primary btn-sm me-1">로그인</a>
@@ -80,8 +82,6 @@
                     })
                     .catch(err => console.error(err));
             }
-            
-            // 페이지 접속 시 즉시 1번 실행하고, 이후 3초마다 계속 감시
             checkNotifications();
             setInterval(checkNotifications, 3000);
         <% } %>
