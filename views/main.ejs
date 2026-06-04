@@ -5,10 +5,7 @@
     <title>한국교통대학교장터 - 메인</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        :root {
-            --knut-color: #8A1538;
-            --knut-hover: #6b102b;
-        }
+        :root { --knut-color: #8A1538; --knut-hover: #6b102b; }
         body { background-color: #f4f6f8; font-family: 'Pretendard', -apple-system, sans-serif; display: flex; flex-direction: column; min-height: 100vh; margin: 0; }
         
         .bg-knut { background-color: var(--knut-color) !important; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
@@ -18,20 +15,20 @@
         .hero-banner { background: linear-gradient(135deg, var(--knut-color) 0%, #4a0a1c 100%); color: white; border-radius: 20px; padding: 50px 40px; margin-top: 20px; margin-bottom: 40px; box-shadow: 0 10px 20px rgba(138, 21, 56, 0.2); position: relative; overflow: hidden; }
         .hero-title { font-weight: 800; font-size: 2.5rem; margin-bottom: 15px; }
         
-        .product-card { transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease; border-radius: 16px; border: none; background: white; overflow: hidden; }
+        .product-card { transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease; border-radius: 16px; border: none; background: white; overflow: hidden; height: 100%; }
         .product-card:hover { transform: translateY(-10px); box-shadow: 0 15px 35px rgba(0,0,0,0.1); cursor: pointer; }
-        .product-img { height: 220px; object-fit: cover; width: 100%; border-bottom: 1px solid #f0f0f0; }
         
+        /* ⭐ 친구 물품 전용 강조 테두리 효과 */
+        .friend-card { border: 2px solid var(--knut-color); box-shadow: 0 4px 15px rgba(138, 21, 56, 0.15); }
+        
+        .product-img { height: 220px; object-fit: cover; width: 100%; border-bottom: 1px solid #f0f0f0; }
         .card-body { padding: 20px; }
         .card-title { font-weight: 700; font-size: 1.1rem; color: #222; margin-bottom: 8px; }
         .price-text { font-size: 1.3rem; font-weight: 800; color: #222; }
         .card-info { font-size: 0.85rem; color: #888; }
         .badge-status { padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: 0.8rem; }
 
-        /* ⭐ 하단 카피라이트 푸터 스타일 */
         .footer { background-color: #e9ecef; color: #6c757d; text-align: center; padding: 30px 0; margin-top: auto; font-size: 0.9rem; }
-        
-        /* ⭐ 우측 하단 둥근 플로팅 버튼(상품등록) 스타일 */
         .floating-btn { position: fixed; bottom: 40px; right: 40px; z-index: 1000; background-color: var(--knut-color); color: white; border-radius: 30px; padding: 15px 30px; font-weight: bold; font-size: 1.1rem; box-shadow: 0 6px 20px rgba(138, 21, 56, 0.4); transition: all 0.3s ease; text-decoration: none; display: flex; align-items: center; gap: 8px; }
         .floating-btn:hover { background-color: var(--knut-hover); color: white; transform: translateY(-5px); box-shadow: 0 10px 25px rgba(138, 21, 56, 0.6); }
     </style>
@@ -69,10 +66,54 @@
                 <p class="fs-5 opacity-75 mb-0">안 쓰는 전공 서적부터 자취방 필수품까지, 쉽고 빠르게 거래하세요!</p>
             </div>
 
-            <h3 class="mb-4 fw-bold text-dark">📦 실시간 등록 상품</h3>
+            <!-- ⭐ 서버에서 넘어온 데이터를 '친구 상품'과 '일반 상품'으로 분리 -->
+            <% 
+                let friendItems = [];
+                let normalItems = [];
+                if (typeof allProducts !== 'undefined') {
+                    allProducts.forEach(p => {
+                        if (p.isFriendProduct === 1) friendItems.push(p);
+                        else normalItems.push(p);
+                    });
+                }
+            %>
+
+            <!-- ⭐ 1. 친구 상품 구역 (친구 상품이 1개라도 있을 때만 표시됨) -->
+            <% if (user && friendItems.length > 0) { %>
+                <div class="d-flex align-items-center mb-4">
+                    <h3 class="fw-bold m-0" style="color: var(--knut-color);">🤝 내 친구의 등록 상품</h3>
+                    <span class="badge bg-danger ms-3 rounded-pill shadow-sm">Special</span>
+                </div>
+                <div class="row mb-5 pb-5 border-bottom border-2">
+                    <% friendItems.forEach(product => { %>
+                        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                            <!-- 친구 상품에는 'friend-card' 클래스가 추가되어 강조됩니다 -->
+                            <div class="card product-card friend-card" onclick="location.href='/products/detail/<%= product.id %>'">
+                                <img src="<%= product.imagePath || 'https://via.placeholder.com/300x200?text=No+Image' %>" class="card-img-top product-img">
+                                <div class="card-body">
+                                    <h5 class="card-title text-truncate fw-bold text-dark"><%= product.title %></h5>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div class="price-text text-knut"><%= Number(product.price || 0).toLocaleString() %>원</div>
+                                        <% if (product.status === 'soldout') { %><span class="badge bg-secondary badge-status">판매완료</span>
+                                        <% } else if (product.status === 'reserved') { %><span class="badge bg-warning text-dark badge-status">예약중</span>
+                                        <% } else { %><span class="badge badge-status" style="background-color: var(--knut-color);">판매중</span><% } %>
+                                    </div>
+                                    <div class="card-info mt-3 d-flex justify-content-between">
+                                        <span>👤 <strong><%= product.ownerName %></strong> 학우</span>
+                                        <span>👁 <%= product.views %></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } %>
+
+            <!-- ⭐ 2. 전체(일반) 상품 구역 -->
+            <h3 class="mb-4 fw-bold text-dark">📦 전체 판매 물품</h3>
             <div class="row">
-                <% if (typeof allProducts !== 'undefined' && allProducts.length > 0) { %>
-                    <% allProducts.forEach(product => { %>
+                <% if (normalItems.length > 0) { %>
+                    <% normalItems.forEach(product => { %>
                         <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
                             <div class="card product-card" onclick="location.href='/products/detail/<%= product.id %>'">
                                 <img src="<%= product.imagePath || 'https://via.placeholder.com/300x200?text=No+Image' %>" class="card-img-top product-img">
@@ -94,27 +135,19 @@
                     <% }); %>
                 <% } else { %>
                     <div class="col-12 text-center py-5">
-                        <h5 class="card-title text-truncate">
-                            <!-- ⭐ 친구의 물건일 경우 제목 앞에 배지 표시 -->
-                            <% if (typeof product.isFriendProduct !== 'undefined' && product.isFriendProduct === 1) { %>
-                                <span class="badge bg-info text-white me-1 shadow-sm" style="font-size: 0.75rem; border-radius: 12px; background-color: #0dcaf0 !important;">🤝 내 친구</span>
-                            <% } %>
-                            <%= product.title %>
-                        </h5>
+                        <h5 class="text-muted fw-bold">아직 등록된 일반 상품이 없습니다. 첫 상품을 등록해 보세요!</h5>
                     </div>
                 <% } %>
             </div>
         </div>
     </div>
     
-    <!-- ⭐ 로그인한 사용자에게만 우측 하단 플로팅 버튼(상품등록) 표시 -->
     <% if (user) { %>
         <a href="/products/write" class="floating-btn">
             <span style="font-size: 1.2rem;">✏️</span> 상품등록
         </a>
     <% } %>
 
-    <!-- ⭐ 하단 카피라이트 푸터 -->
     <footer class="footer mt-5">
         <div class="container">
             <p class="mb-1 fw-bold">&copy; 2026 한국교통대학교장터 (KNUT Market). All rights reserved.</p>
