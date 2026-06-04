@@ -2,61 +2,98 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>내 정보 - MyMarket</title>
+    <title>내 정보 - 한국교통대학교장터</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root { --knut-color: #8A1538; --knut-hover: #6b102b; }
+        body { background-color: #f4f6f8; font-family: 'Pretendard', sans-serif; }
+        .bg-knut { background-color: var(--knut-color) !important; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .text-knut { color: var(--knut-color) !important; }
+        .btn-knut { background-color: var(--knut-color); border-color: var(--knut-color); color: white; transition: all 0.2s; }
+        .btn-knut:hover { background-color: var(--knut-hover); border-color: var(--knut-hover); color: white; transform: translateY(-2px); }
+        .profile-card { border-radius: 20px; border: none; box-shadow: 0 15px 35px rgba(0,0,0,0.05); overflow: hidden; }
+        .list-group-item { border-left: none; border-right: none; }
+    </style>
 </head>
-<body class="bg-light">
-    <nav class="navbar navbar-dark bg-dark mb-5">
-        <div class="container"><a href="/" class="navbar-brand fw-bold">🛒 MyMarket</a><a href="/" class="btn btn-outline-light btn-sm">홈으로</a></div>
+<body>
+    <nav class="navbar navbar-dark bg-knut mb-5">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-4" href="/">🎓 한국교통대학교장터</a>
+            <a href="/" class="btn btn-light btn-sm rounded-pill fw-bold text-knut px-3">🏠 홈으로</a>
+        </div>
     </nav>
-    <div class="container mb-5" style="max-width: 700px;">
-        <div class="card shadow border-0">
-            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                <h4 class="mb-0">👤 내 지갑 및 정보</h4>
-                <a href="/auth/profile/edit" class="btn btn-sm btn-light">정보 수정</a>
+
+    <div class="container mb-5" style="max-width: 750px;">
+        <div class="card profile-card">
+            <div class="card-header bg-knut text-white d-flex justify-content-between align-items-center p-4 border-0">
+                <h4 class="mb-0 fw-bold">👤 내 지갑 및 정보</h4>
+                <a href="/auth/profile/edit" class="btn btn-outline-light btn-sm rounded-pill fw-bold px-3">정보 수정</a>
             </div>
-            <div class="card-body p-4">
-                <div class="alert alert-warning d-flex justify-content-between align-items-center mb-3">
+            
+            <div class="card-body p-5">
+                <!-- 나의 보유 금액 -->
+                <div class="bg-light rounded-4 p-4 d-flex justify-content-between align-items-center mb-4 border">
                     <h5 class="mb-0 text-dark fw-bold">💰 나의 보유 금액</h5>
-                    <h4 class="mb-0 text-danger fw-bold"><%= Number(profile.balance).toLocaleString() %> 원</h4>
+                    <h3 class="mb-0 text-knut fw-bold"><%= Number(profile.balance).toLocaleString() %> 원</h3>
                 </div>
                 
-                <div class="bg-light p-3 rounded border mb-4">
-                    <h6 class="fw-bold mb-2">💸 이웃에게 간편 송금하기</h6>
+                <!-- 간편 송금 기능 -->
+                <div class="bg-white rounded-4 p-4 border shadow-sm mb-5">
+                    <h6 class="fw-bold mb-3 text-dark">💸 이웃 학우에게 간편 송금하기</h6>
                     <form action="/auth/transfer" method="POST" class="d-flex gap-2 align-items-center">
-                        <input type="text" name="targetUserId" class="form-control" placeholder="받는 사람 아이디" required>
-                        <input type="number" name="amount" class="form-control" placeholder="송금할 금액" required min="1">
-                        <button type="submit" class="btn btn-success fw-bold" style="white-space: nowrap;">송금</button>
+                        <input type="text" name="targetUserId" class="form-control rounded-pill px-3" placeholder="받는 사람 아이디" required>
+                        <input type="number" name="amount" class="form-control rounded-pill px-3" placeholder="송금할 금액" required min="1">
+                        <button type="submit" class="btn btn-knut fw-bold rounded-pill px-4" style="white-space: nowrap;">송금</button>
                     </form>
                 </div>
 
-                <div class="mb-2 d-flex"><div style="width:100px;" class="fw-bold text-muted">아이디</div><div><%= profile.userId %></div></div>
-                <div class="mb-4 d-flex"><div style="width:100px;" class="fw-bold text-muted">회원 번호</div><div>#<%= profile.id %></div></div>
-                <hr>
+                <div class="mb-2 d-flex px-2"><div style="width:120px;" class="fw-bold text-muted">내 아이디</div><div class="fw-bold text-dark"><%= profile.userId %></div></div>
+                <div class="mb-5 d-flex px-2"><div style="width:120px;" class="fw-bold text-muted">회원 번호</div><div class="text-secondary">#<%= profile.id %></div></div>
+                
+                <hr class="mb-4">
 
-                <h5 class="fw-bold mb-3 text-primary">🤝 내 물건에 들어온 흥정 요청</h5>
+                <!-- 내 물건에 들어온 흥정 요청 -->
+                <h5 class="fw-bold mb-3 text-knut">🤝 내 물건에 들어온 흥정 요청</h5>
                 <% if (typeof receivedBargains !== 'undefined' && receivedBargains.length > 0) { %>
-                    <ul class="list-group mb-4">
+                    <ul class="list-group mb-5 shadow-sm rounded-4 overflow-hidden">
                         <% receivedBargains.forEach(b => { %>
-                            <li class="list-group-item d-flex justify-content-between align-items-center p-3">
-                                <div><strong class="fs-5">[<%= b.title %>]</strong><br><span class="text-muted"><%= b.buyerName %>님의 제안: </span><span class="text-danger fw-bold fs-5"><%= Number(b.offerPrice).toLocaleString() %>원</span></div>
-                                <div><a href="/products/bargain/accept/<%= b.id %>" class="btn btn-success fw-bold me-1" onclick="return confirm('수락하시겠습니까?')">수락</a><a href="/products/bargain/reject/<%= b.id %>" class="btn btn-outline-danger">거절</a></div>
+                            <li class="list-group-item d-flex justify-content-between align-items-center p-4">
+                                <div>
+                                    <strong class="fs-5 text-dark">[<%= b.title %>]</strong><br>
+                                    <span class="text-muted"><%= b.buyerName %>님의 제안: </span>
+                                    <span class="text-danger fw-bold fs-5"><%= Number(b.offerPrice).toLocaleString() %>원</span>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <a href="/products/bargain/accept/<%= b.id %>" class="btn btn-knut fw-bold rounded-pill px-3" onclick="return confirm('수락하시겠습니까?')">수락</a>
+                                    <a href="/products/bargain/reject/<%= b.id %>" class="btn btn-outline-secondary rounded-pill px-3">거절</a>
+                                </div>
                             </li>
                         <% }) %>
                     </ul>
-                <% } else { %><div class="bg-light rounded p-4 text-center text-muted mb-4 border">대기 중인 요청이 없습니다.</div><% } %>
+                <% } else { %>
+                    <div class="bg-light rounded-4 p-4 text-center text-muted mb-5 border">대기 중인 흥정 요청이 없습니다.</div>
+                <% } %>
 
-                <hr>
-                <h5 class="fw-bold mb-3 text-success">🛍️ 내가 구매한 물품 내역</h5>
+                <hr class="mb-4">
+
+                <!-- 내가 구매한 물품 내역 -->
+                <h5 class="fw-bold mb-3 text-dark">🛍️ 내가 구매한 물품 내역</h5>
                 <% if (typeof purchasedProducts !== 'undefined' && purchasedProducts.length > 0) { %>
                     <div class="row">
                         <% purchasedProducts.forEach(p => { %>
                             <div class="col-md-6 mb-3">
-                                <div class="card h-100 border-success"><div class="card-body"><h6 class="fw-bold text-truncate"><%= p.title %></h6><p class="text-danger mb-0"><%= Number(p.price).toLocaleString() %>원 결제됨</p></div></div>
+                                <div class="card h-100 border-0 shadow-sm rounded-4" style="background-color: #f8f9fa;">
+                                    <div class="card-body p-4">
+                                        <h6 class="fw-bold text-truncate text-dark"><%= p.title %></h6>
+                                        <p class="text-knut fw-bold mb-0"><%= Number(p.price).toLocaleString() %>원 결제됨</p>
+                                    </div>
+                                </div>
                             </div>
                         <% }) %>
                     </div>
-                <% } else { %><div class="bg-light rounded p-4 text-center text-muted border">아직 구매한 물품이 없습니다.</div><% } %>
+                <% } else { %>
+                    <div class="bg-light rounded-4 p-4 text-center text-muted border">아직 구매한 물품이 없습니다. 쇼핑을 즐겨보세요!</div>
+                <% } %>
             </div>
         </div>
     </div>
