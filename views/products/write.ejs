@@ -55,10 +55,19 @@
                         <label class="form-label fw-bold text-knut">상품 이미지 (필수 📸)</label>
                         <input type="file" name="document" class="form-control bg-white" accept="image/*" required id="productImage">
                     </div>
+
+                    <div class="mb-4 p-4 rounded-4" style="background-color: #fff0f4; border: 1px dashed #e8a5b8;">
+                        <label class="form-label fw-bold text-knut mb-2">📄 문서로 상세 설명 채우기 (.txt)</label>
+                        <div class="d-flex gap-2">
+                            <input type="file" id="txtFileInput" class="form-control bg-white" accept=".txt">
+                            <button type="button" class="btn btn-knut rounded-pill px-4 fw-bold shadow-sm" onclick="loadTxtFile()" style="white-space: nowrap;">내용 불러오기</button>
+                        </div>
+                        <div class="form-text mt-2 text-dark opacity-75 small">※ 텍스트 파일을 선택하고 버튼을 누르면 아래 상세 설명 칸에 자동으로 글이 합쳐집니다.</div>
+                    </div>
                     
                     <div class="mb-5">
                         <label class="form-label fw-bold text-dark">상세 설명</label>
-                        <textarea name="content" class="form-control" rows="6" placeholder="상품의 상태(필기 흔적, 사용감 등)를 자세히 적어주세요."></textarea>
+                        <textarea name="content" id="productContent" class="form-control" rows="6" placeholder="상품의 상태(필기 흔적, 사용감 등)를 자세히 적어주세요."></textarea>
                     </div>
                     
                     <div class="d-grid">
@@ -70,6 +79,38 @@
     </div>
 
     <script>
+        // ⭐ .txt 파일 읽어서 텍스트창에 즉시 넣어주는 마법의 스크립트
+        function loadTxtFile() {
+            const fileInput = document.getElementById('txtFileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('먼저 불러올 .txt 파일을 선택해주세요!');
+                return;
+            }
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const contentArea = document.getElementById('productContent');
+                
+                // 기존 내용이 있으면 줄바꿈 후 첨부 내용 추가
+                if (contentArea.value.trim() !== '') {
+                    contentArea.value += '\n\n[첨부 문서 내용]\n' + text;
+                } else {
+                    contentArea.value = text;
+                }
+                
+                alert('문서 내용이 성공적으로 추가되었습니다! 내용을 확인하고 수정할 수 있습니다.');
+                fileInput.value = ''; // 다음 업로드를 위해 파일 입력창 초기화
+            };
+            
+            // 한글 깨짐을 방지하기 위해 UTF-8로 읽기
+            reader.readAsText(file, "UTF-8");
+        }
+
+        // 폼 제출 시 연타 방지 및 검증
         let isSubmitting = false;
         function preventDoubleSubmit() {
             if (!document.getElementById('productImage').value) { alert('상품 이미지를 첨부해주세요!'); return false; }
