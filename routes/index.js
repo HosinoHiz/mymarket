@@ -2,12 +2,21 @@ const express = require('express');
 const router = express.Router();
 const db = require('../models/db');
 
-// ⭐ 1. 메인 페이지 (친구 물건 최상단 정렬 로직 추가)
+// ⭐ 메인 페이지 (실시간 잔액 동기화 + 친구 물품 상단 정렬)
 router.get('/', async (req, res) => {
     try {
         let allProducts = [];
+        let realBalance = 0; // DB에서 실시간으로 가져올 진짜 잔액 변수
+
         if (req.session.user) {
-            // 로그인 시: 내 친구가 올린 물건인지 확인(isFriendProduct)하여 먼저 정렬하고, 그다음 최신순 정렬
+            // 1. DB에서 가장 최신 내 잔고 가져오기 (0원으로 뜨는 버그 해결!)
+            const [userRows] = await db.query('SELECT balance FROM users WHERE id = ?', [req.session.user.id]);
+            if (userRows.length > 0) {
+                realBalance = userRows[0].balance;
+                req.session.user.balance = realBalance; // 임시 출입증(세션)의 잔고도 최신화
+            }
+
+            // 2. 내 친구가 올린 물건인지 확인하여 먼저 정렬
             const [products] = await db.query(`
                 SELECT p.*, u.userId AS ownerName,
                        IF(f.friendId IS NOT NULL, 1, 0) AS isFriendProduct
@@ -18,16 +27,20 @@ router.get('/', async (req, res) => {
             `, [req.session.user.id]);
             allProducts = products;
         } else {
-            // 비로그인 시: 일반 최신순 정렬
+            // 비로그인 시 일반 최신순 정렬
             const [products] = await db.query('SELECT p.*, u.userId AS ownerName FROM products p JOIN users u ON p.userId = u.id ORDER BY p.id DESC');
             allProducts = products;
         }
+        
         res.render('main', { 
             user: req.session.user, 
-            userBalance: req.session.user ? req.session.user.balance : 0,
+            userBalance: realBalance, // 업데이트된 진짜 잔액을 화면으로 전달
             allProducts 
         });
-    } catch (err) { res.status(500).send("메인 페이지 오류"); }
+    } catch (err) { 
+        console.error(err);
+        res.status(500).send("메인 페이지 오류"); 
+    }
 });
 
 // ⭐ 2. 친구 추가 기능 (중복 방지 로직 추가)
