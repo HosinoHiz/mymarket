@@ -18,7 +18,7 @@
         .product-card { transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease; border-radius: 16px; border: none; background: white; overflow: hidden; height: 100%; }
         .product-card:hover { transform: translateY(-10px); box-shadow: 0 15px 35px rgba(0,0,0,0.1); cursor: pointer; }
         
-        /* ⭐ 친구 물품 전용 강조 테두리 효과 */
+        /* 친구 물품 전용 강조 테두리 효과 */
         .friend-card { border: 2px solid var(--knut-color); box-shadow: 0 4px 15px rgba(138, 21, 56, 0.15); }
         
         .product-img { height: 220px; object-fit: cover; width: 100%; border-bottom: 1px solid #f0f0f0; }
@@ -66,7 +66,7 @@
                 <p class="fs-5 opacity-75 mb-0">안 쓰는 전공 서적부터 자취방 필수품까지, 쉽고 빠르게 거래하세요!</p>
             </div>
 
-            <!-- ⭐ 서버에서 넘어온 데이터를 '친구 상품'과 '일반 상품'으로 분리 -->
+            <!-- 서버에서 넘어온 데이터를 '친구 상품'과 '일반 상품'으로 분리 -->
             <% 
                 let friendItems = [];
                 let normalItems = [];
@@ -78,7 +78,7 @@
                 }
             %>
 
-            <!-- ⭐ 1. 친구 상품 구역 (친구 상품이 1개라도 있을 때만 표시됨) -->
+            <!-- 1. 친구 상품 구역 (친구 상품이 1개라도 있을 때만 표시됨) -->
             <% if (user && friendItems.length > 0) { %>
                 <div class="d-flex align-items-center mb-4">
                     <h3 class="fw-bold m-0" style="color: var(--knut-color);">🤝 내 친구의 등록 상품</h3>
@@ -109,7 +109,7 @@
                 </div>
             <% } %>
 
-            <!-- ⭐ 2. 전체(일반) 상품 구역 -->
+            <!-- 2. 전체(일반) 상품 구역 -->
             <h3 class="mb-4 fw-bold text-dark">📦 전체 판매 물품</h3>
             <div class="row">
                 <% if (normalItems.length > 0) { %>

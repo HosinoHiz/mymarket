@@ -57,7 +57,7 @@
                     <span class="text-secondary fw-bold">거래 전 판매자에게 인사해보세요! 👋</span>
                     <% if (user && user.id !== product.userId) { %>
                         <div class="d-flex gap-2">
-                            <!-- ⭐ 이미 친구라면 버튼을 회색으로 비활성화 -->
+                            <!-- 이미 친구라면 버튼을 회색으로 비활성화 -->
                             <% if (isFriend) { %>
                                 <button class="btn btn-secondary fw-bold rounded-pill px-3 shadow-sm" disabled>🤝 내 친구</button>
                             <% } else { %>

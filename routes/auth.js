@@ -3,7 +3,7 @@ const router = express.Router();
 const db = require('../models/db');
 const bcrypt = require('bcryptjs');
 
-// ⭐ 비밀번호 정규식 (영문, 숫자, 특수문자 포함 최소 6자)
+// 비밀번호 정규식 (영문, 숫자, 특수문자 포함 최소 6자)
 const pwdRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+={}\[\]|\\:;"'<>,.?/-]).{6,}$/;
 
 router.get('/login', (req, res) => { if (req.session.user) return res.redirect('/'); res.render('auth/login'); });
@@ -35,7 +35,7 @@ router.post('/register', async (req, res) => {
         if (!userId || !password) return res.send("<script>alert('모든 항목을 입력하세요.');history.back();</script>");
         if (password !== confirmPassword) return res.send("<script>alert('비밀번호가 일치하지 않습니다.');history.back();</script>");
         
-        // ⭐ 비밀번호 보안 검증
+        // 비밀번호 보안 검증
         if (!pwdRegex.test(password)) {
             return res.send("<script>alert('보안을 위해 비밀번호는 영문, 숫자, 특수문자를 모두 포함하여 6자 이상으로 만들어주세요.');history.back();</script>");
         }
@@ -59,7 +59,7 @@ router.get('/profile', async (req, res) => {
             WHERE p.userId = ? AND b.status = 'pending' AND p.status != 'soldout' ORDER BY b.createdAt DESC
         `, [userId]);
         
-        // ⭐ 내가 산 물건 목록 가져오기
+        // 내가 산 물건 목록 가져오기
         const [purchasedProducts] = await db.query('SELECT * FROM products WHERE buyerId = ? ORDER BY id DESC', [userId]);
 
         res.render('auth/profile', { profile: userRows[0], receivedBargains, purchasedProducts });
@@ -88,7 +88,7 @@ router.post('/profile/edit', async (req, res) => {
     req.session.user.userId = userId;
     res.send("<script>alert('수정 완료!');location.href='/auth/profile';</script>");
 });
-// ⭐ 돈 송금 기능 라우터
+// 돈 송금 기능 라우터
 router.post('/transfer', async (req, res) => {
     if (!req.session.user) return res.redirect('/auth/login');
     try {
@@ -118,7 +118,7 @@ router.post('/transfer', async (req, res) => {
     } catch (err) { res.status(500).send("송금 오류"); }
 });
 
-// ⭐ 회원 탈퇴 처리 API
+// 회원 탈퇴 처리 API
 router.get('/delete', async (req, res) => {
     // 1. 로그인 상태인지 확인
     if (!req.session.user) {

@@ -14,7 +14,6 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 
 // 보고서와 시작 페이지에 넣을 실제 서버 주소
-// 예: http://123.123.123.123:3000
 const SERVER_URL = process.env.SERVER_URL || `http://localhost:${PORT}`;
 
 // 이미지 업로드 폴더가 없으면 자동 생성

@@ -18,7 +18,7 @@ router.post('/write', requireLogin, upload.single('document'), async (req, res) 
     try {
         let { title, content, price, location } = req.body;
         title = title || ''; content = content || ''; price = parsePrice(price);
-        location = location || '지역 정보 없음'; // ⭐ 지역 정보 추가
+        location = location || '지역 정보 없음'; // 지역 정보 추가
 
         if (!isValidPrice(price)) return res.send("<script>alert('가격은 0원 이상 999,999,999원 이하로 입력하세요.');history.back();</script>");
         if (!req.file || !isImageFile(req.file)) return res.send("<script>alert('상품 이미지는 필수입니다!');history.back();</script>");
@@ -132,7 +132,7 @@ router.post('/bargain/:id', requireLogin, async (req, res) => {
         if (product.status === 'reserved') return res.send("<script>alert('현재 예약 진행 중이라 흥정할 수 없습니다.');history.back();</script>");
         if (offerPrice >= product.price) return res.send("<script>alert('원가보다 낮은 가격을 제시해주세요!');history.back();</script>");
         
-        // ⭐ 최대 -15% 제한 로직 추가 (서버단 방어)
+        // 최대 -15% 제한 로직 추가 (서버단 방어)
         const minPrice = Math.ceil(product.price * 0.85); // 85% 이상만 허용
         if (offerPrice < minPrice) {
             return res.send(`<script>alert('터무니없는 가격이네요! 최대 15% 할인된 ${minPrice.toLocaleString()}원 이상만 흥정 가능합니다.');history.back();</script>`);

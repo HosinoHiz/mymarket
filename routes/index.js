@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../models/db');
 
-// ⭐ 메인 페이지 (실시간 잔액 동기화 + 친구 물품 상단 정렬)
+// 메인 페이지 (실시간 잔액 동기화 + 친구 물품 상단 정렬)
 router.get('/', async (req, res) => {
     try {
         let allProducts = [];
@@ -43,7 +43,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-// ⭐ 2. 친구 추가 기능 (중복 방지 로직 추가)
+// 2. 친구 추가 기능 (중복 방지 로직 추가)
 router.get('/add-friend/:id', async (req, res) => {
     if (!req.session.user) return res.send("<script>alert('로그인이 필요합니다.');location.href='/auth/login';</script>");
     try {
@@ -112,7 +112,7 @@ router.post('/chat/:sellerId', async (req, res) => {
     } catch (err) { res.status(500).send("메시지 전송 오류"); }
 });
 
-// ⭐ 장바구니 보기 페이지
+// 장바구니 보기 페이지
 router.get('/cart', async (req, res) => {
     if (!req.session.user) return res.redirect('/auth/login');
     try {
@@ -125,14 +125,14 @@ router.get('/cart', async (req, res) => {
     } catch(err) { res.status(500).send("장바구니 조회 오류"); }
 });
 
-// ⭐ 장바구니에서 삭제
+// 장바구니에서 삭제
 router.get('/cart/remove/:cartId', async (req, res) => {
     if (!req.session.user) return res.redirect('/auth/login');
     await db.query('DELETE FROM cart WHERE id = ? AND userId = ?', [req.params.cartId, req.session.user.id]);
     res.redirect('/cart');
 });
 
-// ⭐ 알림 자동 리프레쉬를 위한 안 읽은 알림 개수 확인 API
+// 알림 자동 리프레쉬를 위한 안 읽은 알림 개수 확인 API
 router.get('/api/noti-check', async (req, res) => {
     if (!req.session.user) return res.json({ count: 0 });
     try {
@@ -141,7 +141,7 @@ router.get('/api/noti-check', async (req, res) => {
     } catch(err) { res.json({ count: 0 }); }
 });
 
-// ⭐ 내 친구 목록 불러오기 API (가로 스크롤 UI용)
+// 내 친구 목록 불러오기 API (가로 스크롤 UI용)
 router.get('/api/friends', async (req, res) => {
     if (!req.session.user) return res.json([]);
     try {
